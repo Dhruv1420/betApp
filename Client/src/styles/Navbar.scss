@@ -1,0 +1,96 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: #ffffff7a;
+    color: #000000;
+    position: relative;
+    border: #ffffff 0.5px solid;
+    border-radius: 30px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 90%;
+    margin: 0 auto;
+    height: 2rem;
+    &__brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  
+    &__toggle {
+      display: none;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 0.3rem;
+  
+      .bar {
+        width: 25px;
+        height: 3px;
+        background-color: #000000;
+        transition: all 0.3s ease;
+      }
+  
+      &.open .bar:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+      }
+  
+      &.open .bar:nth-child(2) {
+        opacity: 0;
+      }
+  
+      &.open .bar:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+      }
+    }
+  
+    &__menu {
+      list-style: none;
+      display: flex;
+      gap: 2rem;
+      transition: all 0.3s ease; // Optional: smoother menu transition effect
+  
+      &.open {
+        display: flex;
+      }
+    }
+  
+    &__item {
+      a {
+        text-decoration: none;
+        color: #000000;
+        transition: color 0.3s ease;
+  
+        &:hover {
+          color: #cc9d37;
+        }
+      }
+    }
+  
+    // Responsive styles
+    @media (max-width: 768px) {
+      &__toggle {
+        display: flex;
+      }
+  
+      &__menu {
+        flex-direction: column;
+        align-items: flex-start;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #fffffff8;
+        padding: 1rem 2rem;
+        display: none;
+  
+        &.open {
+          display: flex;
+        }
+      }
+    }
+  }
+  

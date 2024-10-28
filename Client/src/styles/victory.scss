@@ -1,0 +1,203 @@
+.app {
+    font-family: Arial, sans-serif;
+  
+    .header {
+      background: #007bff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+  
+      .logo {
+        width: 60px;
+        height: auto;
+        margin-bottom: 10px;
+      }
+  
+      .user-info {
+        p {
+          margin: 5px 0;
+          font-size: 1.2rem;
+          .font-bold {
+            font-weight: bold;
+          }
+        }
+      }
+  
+      .exit-btn {
+        background-color: #ff4c4c;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        &:hover {
+          background-color: #ff2c2c;
+        }
+      }
+    }
+  
+    .tabs {
+      background-color: #f8f8f8;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+  
+      .tab {
+        font-size: 1rem;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+  
+        &.active {
+          border-bottom: 2px solid #007bff;
+          color: #007bff;
+        }
+        &:hover {
+          background-color: #e6e6e6;
+        }
+      }
+    }
+  
+    .table-section {
+      padding: 20px;
+      overflow-x: auto;  /* Allows table to scroll horizontally on small screens */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-size: 1rem;
+  
+        th, td {
+          padding: 12px;
+          border: 1px solid #ddd;
+        }
+  
+        th {
+          background-color: #f1f1f1;
+          font-weight: bold;
+        }
+  
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+      }
+    }
+  
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+  
+      .one-click-btn {
+        width: 45%;
+        padding: 15px;
+        font-size: 1rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+  
+        &.open {
+          background-color: #007bff;
+          color: white;
+          &:hover {
+            background-color: #0056b3;
+          }
+        }
+  
+        &.close {
+          background-color: #e0e0e0;
+          color: #333;
+          &:hover {
+            background-color: #d6d6d6;
+          }
+        }
+      }
+    }
+  
+    /* Media Query for Mobile Devices */
+    @media (max-width: 768px) {
+      .header {
+        padding: 10px;
+        .logo {
+          width: 40px;
+        }
+        .user-info {
+          p {
+            font-size: 1rem;
+          }
+        }
+        .exit-btn {
+          padding: 8px 15px;
+          font-size: 0.9rem;
+        }
+      }
+  
+      .tabs {
+        .tab {
+          font-size: 0.9rem;
+          padding: 8px;
+        }
+      }
+  
+      .table-section {
+        padding: 10px;
+        table {
+          font-size: 0.9rem;
+  
+          th, td {
+            padding: 8px;
+          }
+        }
+      }
+  
+      .buttons {
+        flex-direction: column;  /* Stacks buttons vertically on mobile */
+        .one-click-btn {
+          width: 100%;
+          margin-bottom: 10px; /* Adds spacing between buttons */
+        }
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .header {
+        .user-info {
+          p {
+            font-size: 0.9rem;
+          }
+        }
+        .exit-btn {
+          padding: 6px 12px;
+          font-size: 0.8rem;
+        }
+      }
+  
+      .tabs {
+        .tab {
+          font-size: 0.8rem;
+          padding: 5px;
+        }
+      }
+  
+      .table-section {
+        padding: 5px;
+        table {
+          font-size: 0.8rem;
+  
+          th, td {
+            padding: 6px;
+          }
+        }
+      }
+  
+      .buttons {
+        .one-click-btn {
+          padding: 10px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+  

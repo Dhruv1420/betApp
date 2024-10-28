@@ -1,0 +1,20 @@
+* {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+.container {
+  max-width: 1367px;
+  width: 100%;
+  margin: auto;
+  overflow: auto;
+}
+
+.notFound {
+  height: 80vh;
+  @include flex(column);
+  > svg {
+    font-size: 4rem;
+  }
+}
