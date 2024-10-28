@@ -22,3 +22,21 @@ export type User = {
     }
   ];
 };
+export interface PaymentResponse {
+  success: boolean;
+  amount?: number;
+  url?: string;
+  message?: string;
+  user?: any; // Adjust according to your user schema
+}
+
+export interface PaymentDetailsRequest {
+  id: string; // User ID
+  amount: number;
+  referenceNumber: string;
+}
+
+export interface WithdrawRequest {
+  id: string; // User ID
+  coins: number;
+}
