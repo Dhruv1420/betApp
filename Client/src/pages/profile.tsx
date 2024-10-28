@@ -17,6 +17,11 @@ import { RootState } from "../redux/store";
 import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
+import axios, { AxiosError } from "axios";
+import { server } from "../contants/keys";
+import { useDispatch } from "react-redux";
+import { userNotExist } from "../redux/reducer/userReducer";
+import toast from "react-hot-toast";
 
 const Profile = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
@@ -24,6 +29,7 @@ const Profile = () => {
   const [openDeposit, setOpenDeposit] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleOpenProfile = () => setOpenProfile(true);
   const handleCloseProfile = () => setOpenProfile(false);
@@ -33,6 +39,26 @@ const Profile = () => {
 
   const handleOpenWithdraw = () => setOpenWithdraw(true);
   const handleCloseWithdraw = () => setOpenWithdraw(false);
+
+  const logoutHandler = async () => {
+    try {
+      const { data } = await axios.get(`${server}/api/v1/user/logout`, {
+        withCredentials: true,
+      });
+
+      dispatch(userNotExist());
+      toast.success(data.message);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error?.response?.data?.message || "Something Went Wrong");
+      } else if (error instanceof Error) {
+        toast.error(error.message || "Something Went Wrong");
+      } else {
+        console.log("An unknown error occurred:", error);
+        toast.error("An unknown error occurred");
+      }
+    }
+  };
 
   return (
     <div>
@@ -102,11 +128,24 @@ const Profile = () => {
         <ListItem component="button">
           <ListItemText primary="Lottery Record" />
         </ListItem>
+        <ListItem component="button">
+          <ListItemText primary="Logout" onClick={logoutHandler} />
+        </ListItem>
       </List>
 
       {/* Profile Information Dialog */}
-      <Dialog open={openProfile} onClose={handleCloseProfile} fullWidth maxWidth="sm">
-        <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
+      <Dialog
+        open={openProfile}
+        onClose={handleCloseProfile}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
           <DialogTitle>Profile Information</DialogTitle>
           <IconButton onClick={handleCloseProfile} edge="end">
             <CloseIcon />
@@ -115,32 +154,54 @@ const Profile = () => {
         <DialogContent dividers>
           <Box display="flex" flexDirection="column" gap={2}>
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="subtitle1" fontWeight="bold">Name:</Typography>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Name:
+              </Typography>
               <Typography variant="body1">{user?.name || "N/A"}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="subtitle1" fontWeight="bold">Email:</Typography>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Email:
+              </Typography>
               <Typography variant="body1">{user?.email || "N/A"}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="subtitle1" fontWeight="bold">Phone:</Typography>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Phone:
+              </Typography>
               <Typography variant="body1">{user?.phone || "N/A"}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="subtitle1" fontWeight="bold">Gender:</Typography>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Gender:
+              </Typography>
               <Typography variant="body1">{user?.gender || "N/A"}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between">
-              <Typography variant="subtitle1" fontWeight="bold">Referral Code:</Typography>
-              <Typography variant="body1">{user?.referalCode || "N/A"}</Typography>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Referral Code:
+              </Typography>
+              <Typography variant="body1">
+                {user?.referalCode || "N/A"}
+              </Typography>
             </Box>
           </Box>
         </DialogContent>
       </Dialog>
 
       {/* Deposit Record Dialog */}
-      <Dialog open={openDeposit} onClose={handleCloseDeposit} fullWidth maxWidth="sm">
-        <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
+      <Dialog
+        open={openDeposit}
+        onClose={handleCloseDeposit}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
           <DialogTitle>Deposit Record</DialogTitle>
           <IconButton onClick={handleCloseDeposit} edge="end">
             <CloseIcon />
@@ -161,8 +222,18 @@ const Profile = () => {
       </Dialog>
 
       {/* Withdrawal Record Dialog */}
-      <Dialog open={openWithdraw} onClose={handleCloseWithdraw} fullWidth maxWidth="sm">
-        <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
+      <Dialog
+        open={openWithdraw}
+        onClose={handleCloseWithdraw}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
           <DialogTitle>Withdrawal Record</DialogTitle>
           <IconButton onClick={handleCloseWithdraw} edge="end">
             <CloseIcon />
