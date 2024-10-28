@@ -1,22 +1,59 @@
-import React, { useState } from 'react';
-import { useCreatePaymentIntentMutation } from '../redux/api/paymnetAPI'; // Adjust the path as needed
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  useCreatePaymentIntentMutation,
+  usePaymentDetailsMutation,
+} from "../redux/api/paymnetAPI";
+import { RootState } from "../redux/store";
 
 const Payment = () => {
-  const [amount, setAmount] = useState<number>(0); // State for the amount
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>(''); // State for the QR code URL
-  const [createPaymentIntent] = useCreatePaymentIntentMutation(); // Hook from RTK Query
+  const { user } = useSelector((state: RootState) => state.userReducer);
+
+  const [amount, setAmount] = useState<number>(0);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [referenceNumber, setReferenceNumber] = useState<string>("");
+
+  const [createPaymentIntent] = useCreatePaymentIntentMutation();
+  const [paymentDetails] = usePaymentDetailsMutation();
+
+  const navigate = useNavigate();
 
   const handlePayment = async () => {
     try {
       const response = await createPaymentIntent({ amount }).unwrap();
-      // Ensure response.url is defined before setting it
       if (response.url) {
-        setQrCodeUrl(response.url); // Set the QR code URL from the response
+        setQrCodeUrl(response.url);
       } else {
-        console.error('QR code URL is undefined'); // Handle the undefined case if necessary
+        toast.error("QR code URL is undefined");
       }
     } catch (error) {
-      console.error('Payment creation error:', error);
+      toast.error("Payment creation error");
+      console.log(error);
+    }
+  };
+
+  const submitHandler = async () => {
+    try {
+      if (!user) {
+        toast.error("User is not authenticated");
+        navigate("/login");
+        return;
+      }
+
+      const details = {
+        _id: user._id,
+        amount,
+        referenceNumber,
+      };
+      const data = await paymentDetails(details).unwrap();
+      toast.success(data?.message || "Payment Success");
+      navigate("/profile");
+      toast.success("Balance will be updated shortly");
+    } catch (error) {
+      toast.error("Payment creation error");
+      console.log(error);
     }
   };
 
@@ -28,12 +65,25 @@ const Payment = () => {
         value={amount}
         onChange={(e) => setAmount(Number(e.target.value))}
         placeholder="Enter amount"
+        required
       />
       <button onClick={handlePayment}>Create Payment</button>
       {qrCodeUrl && (
         <div>
           <h2>Scan the QR Code</h2>
-          <img src={qrCodeUrl} alt="Payment QR Code" style={{ width: '200px', height: '200px' }} />
+          <img
+            src={qrCodeUrl}
+            alt="Payment QR Code"
+            style={{ width: "200px", height: "200px" }}
+          />
+          <input
+            type="text"
+            value={referenceNumber}
+            onChange={(e) => setReferenceNumber(e.target.value)}
+            placeholder="Enter Reference Number"
+            required
+          />
+          <button onClick={submitHandler}>Pay</button>
         </div>
       )}
     </div>

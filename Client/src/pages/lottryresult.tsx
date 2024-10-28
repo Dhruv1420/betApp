@@ -1,8 +1,6 @@
-import React from 'react';
-import '../styles/victory.scss';
-import { Link } from 'react-router-dom';
-import BottomNav from '../components/Header';
-
+import React from "react";
+import BottomNav from "../components/Header";
+import "../styles/victory.scss";
 
 interface TableData {
   Time: number;
@@ -39,7 +37,7 @@ const App: React.FC = () => {
     <div className="app">
       {/* Header Section */}
       <div className="header">
-      <h1>Lottry Result</h1>
+        <h1>Lottry Result</h1>
       </div>
 
       {/* Tab Section */}
@@ -66,7 +64,6 @@ const App: React.FC = () => {
                 <td>{row.Time}</td>
                 <td>{row.Number}</td>
                 <td>{row.Amount}</td>
-
               </tr>
             ))}
           </tbody>

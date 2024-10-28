@@ -1,9 +1,4 @@
-import {
-
-  User,
-} from "./types";
-
-
+import { User } from "./types";
 
 export type UsersResponse = {
   success: boolean;
@@ -15,13 +10,10 @@ export type UserResponse = {
   user: User;
 };
 
-
 export type MessageResponse = {
   success: boolean;
   message: string;
 };
-
-
 
 export type DeleteUserRequest = {
   userId: string;
@@ -30,24 +22,19 @@ export type DeleteUserRequest = {
 
 export interface PaymentResponse {
   success: boolean;
-  amount: number;
-  url: string; // QR code URL
-
-  
-
+  amount?: number;
+  url?: string;
+  message?: string;
+  user?: User;
 }
 
 export interface PaymentDetailsRequest {
-  id: string; // User ID
+  _id: string;
   amount: number;
   referenceNumber: string;
 }
 
 export interface WithdrawRequest {
-  id: string; // User ID
+  _id: string;
   coins: number;
 }
-
-
-
-// You may need to adjust the structure of these interfaces according to your API response formats.
