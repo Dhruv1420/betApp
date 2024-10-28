@@ -1,236 +1,100 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* payment.scss */
 
-.payment-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f4f4f9;
-}
+$primary-color: #4caf50; // You can change this to your preferred primary color
+$secondary-color: #ffffff;
+$font-family: 'Arial', sans-serif;
 
 .payment-container {
-  width: 100%;
-  max-width: 800px;
-  padding: 20px;
-  margin: 0 15px;
-  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  max-width: 400px;
+  margin: auto;
+  background-color: $secondary-color;
   border-radius: 10px;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-  
-  .amount {
-    text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: $font-family;
+
+  h1 {
     font-size: 2rem;
-    color: #333;
-    margin-bottom: 30px;
-
-    span {
-      font-weight: bold;
-      color: #0073e6;
-    }
+    margin-bottom: 1.5rem;
+    color: $primary-color;
+    text-align: center;
   }
 
-  .option {
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #fafafa;
-    margin-bottom: 20px;
-    
-    h3 {
-      color: #0073e6;
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 1rem;
-      margin: 5px 0;
-      color: #555;
-    }
-
-    .qr-code {
-      display: flex;
-      justify-content: center;
-      margin-top: 15px;
-
-      img {
-        width: 200px;
-        height: 200px;
-        object-fit: contain;
-      }
-    }
-
-    .pay-logo {
-      display: block;
-      max-width: 120px;
-      margin: 15px auto 0;
-    }
-
-    .upi-section {
-      display: flex;
-      align-items: center;
-      margin-top: 10px;
-
-      p {
-        margin-right: 10px;
-        font-size: 1rem;
-      }
-
-      .copy-btn {
-        padding: 8px 15px;
-        font-size: 0.9rem;
-        color: white;
-        background-color: #0073e6;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-          background-color: #005bb5;
-        }
-      }
-
-      .copy-success {
-        margin-left: 10px;
-        color: #28a745;
-        font-size: 0.9rem;
-        animation: fadeOut 2s forwards;
-      }
-
-      @keyframes fadeOut {
-        0% { opacity: 1; }
-        100% { opacity: 0; }
-      }
-    }
-
-    .reference-input {
-      display: flex;
-      align-items: center;
-      margin-top: 15px;
-
-      input {
-        flex: 1;
-        padding: 10px;
-        font-size: 1rem;
-        border: 1px solid #ccc;
-        border-radius: 5px 0 0 5px;
-      }
-
-      .copy-btn {
-        padding: 10px 20px;
-        font-size: 1rem;
-        color: white;
-        background-color: #0073e6;
-        border: none;
-        cursor: pointer;
-        border-radius: 0 5px 5px 0;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-          background-color: #005bb5;
-        }
-      }
-    }
-  }
-
-  .instructions {
-    padding: 20px;
-    font-size: 0.9rem;
-    color: #666;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    margin-bottom: 20px;
-
-    h4 {
-      color: #cc0000;
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-    }
-
-    p {
-      margin: 8px 0;
-      line-height: 1.4;
-    }
-  }
-
-  .submit-btn {
+  input[type="number"],
+  input[type="text"] {
     width: 100%;
-    padding: 15px;
-    font-size: 1.2rem;
-    color: white;
-    background-color: #0073e6;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+
+    &:focus {
+      border-color: $primary-color;
+      outline: none;
+    }
+  }
+
+  button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
+    background-color: $primary-color;
+    color: $secondary-color;
+    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s;
 
     &:hover {
-      background-color: #005bb5;
+      background-color: darken($primary-color, 10%);
     }
   }
-}
 
-// Responsive Styles
-@media (max-width: 768px) {
-  .payment-container {
-    padding: 15px;
+  .qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
 
-    .amount {
+    h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: $primary-color;
+    }
+
+    img {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: 1rem;
+
+    h1 {
       font-size: 1.5rem;
     }
 
-    .option h3 {
-      font-size: 1.3rem;
-    }
-
-    .reference-input input {
-      padding: 8px;
-    }
-
-    .reference-input .copy-btn {
-      padding: 8px 12px;
+    input[type="number"],
+    input[type="text"] {
       font-size: 0.9rem;
     }
 
-    .submit-btn {
-      font-size: 1rem;
-      padding: 12px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .payment-container {
-    padding: 10px;
-
-    .amount {
-      font-size: 1.3rem;
+    button {
+      font-size: 0.9rem;
     }
 
-    .option h3 {
+    .qr-code-container h2 {
       font-size: 1.2rem;
-    }
-
-    .reference-input input {
-      padding: 6px;
-      font-size: 0.9rem;
-    }
-
-    .reference-input .copy-btn {
-      padding: 8px 10px;
-      font-size: 0.85rem;
-    }
-
-    .submit-btn {
-      font-size: 0.9rem;
-      padding: 10px;
     }
   }
 }

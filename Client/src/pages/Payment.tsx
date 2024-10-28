@@ -7,6 +7,7 @@ import {
   usePaymentDetailsMutation,
 } from "../redux/api/paymnetAPI";
 import { RootState } from "../redux/store";
+import '../styles/Payment.scss'; // Import your SCSS file
 
 const Payment = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
@@ -58,7 +59,7 @@ const Payment = () => {
   };
 
   return (
-    <div>
+    <div className="payment-container">
       <h1>Create Payment</h1>
       <input
         type="number"
@@ -69,12 +70,11 @@ const Payment = () => {
       />
       <button onClick={handlePayment}>Create Payment</button>
       {qrCodeUrl && (
-        <div>
+        <div className="qr-code-container">
           <h2>Scan the QR Code</h2>
           <img
             src={qrCodeUrl}
             alt="Payment QR Code"
-            style={{ width: "200px", height: "200px" }}
           />
           <input
             type="text"

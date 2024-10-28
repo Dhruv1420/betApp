@@ -20,6 +20,7 @@ const ProtectedRoute = ({
 
   if (adminOnly && !admin) return <Navigate to={redirect} />;
 
+
   return children ? children : <Outlet />;
 };
 

@@ -10,6 +10,7 @@ import { userExist, userNotExist } from "./redux/reducer/userReducer";
 import { RootState } from "./redux/store";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Co2Sharp } from "@mui/icons-material";
 
 const Home = lazy(() => import("./pages/Home"));
 const Lottery = lazy(() => import("./pages/lottery"));
@@ -20,6 +21,9 @@ const Register = lazy(() => import("./pages/registration"));
 const Victory = lazy(() => import("./pages/victory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Payment = lazy(() => import("./pages/Payment"));
+const Users = lazy(() => import("./pages/admin/users"));
+const AdminHome= lazy(() => import("./pages/admin/adminHome"));
+const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 
 const App = () => {
   const { user, isAdmin, loading } = useSelector(
@@ -72,7 +76,22 @@ const App = () => {
             <Route path="/victory" element={<Victory />} />
             <Route path="/payment" element={<Payment />} />
           </Route>
+          <Route
+            element={
+              <ProtectedRoute
+                isAuthenticated={true}
+                adminOnly={true}
+                admin={user?.role === "admin" ? true : false}
+              />
+            }
+          >
+            {/* Admin Routes */}
+            <Route path="/users" element={<Users />}/>
+            <Route path="/admin" element={<AdminHome />}/>
+            <Route path="/lottrystart" element={<Lottrystart />}
 
+            />
+            </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
