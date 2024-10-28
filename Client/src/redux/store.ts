@@ -4,6 +4,7 @@ import { userAPI } from "./api/userAPI";
 import { paymentAPI } from "./api/paymnetAPI";
 import { betReducer } from "./reducer/betReducer";
 import { betAPI } from "./api/betAPI";
+import { adminAPI } from "./api/adminAPI";
 
 export const server = import.meta.env.VITE_SERVER;
 
@@ -14,12 +15,14 @@ export const store = configureStore({
     [userAPI.reducerPath]: userAPI.reducer,
     [paymentAPI.reducerPath]: paymentAPI.reducer,
     [betAPI.reducerPath]: betAPI.reducer,
+    [adminAPI.reducerPath]: adminAPI.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       userAPI.middleware,
       paymentAPI.middleware,
-      betAPI.middleware
+      betAPI.middleware,
+      adminAPI.middleware
     ),
 });
 

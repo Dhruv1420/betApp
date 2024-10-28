@@ -1,5 +1,13 @@
 import { User } from "./types";
 
+export type CustomError = {
+  status: number;
+  data: {
+    message: string;
+    success: boolean;
+  };
+};
+
 export type UsersResponse = {
   success: boolean;
   users: User[];
@@ -51,4 +59,15 @@ export type BetType = {
   number: number;
   amount: number;
   _id: string;
+};
+
+export type addCoinsType = {
+  userId: string;
+  coins: number;
+};
+
+export type addCoinsResponse = {
+  success: boolean;
+  message: string;
+  user: User;
 };

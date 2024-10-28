@@ -1,29 +1,34 @@
 import { ReactElement, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaTrash } from "react-icons/fa";
+import { BiCoinStack } from "react-icons/bi";
 import { useSelector } from "react-redux";
 import { Column } from "react-table";
 import TableHOC from "../../components/admin/TableHOC";
+import Loader from "../../components/Loader";
 import {
   useAllUsersQuery,
   useDeleteUserMutation,
 } from "../../redux/api/userAPI";
 import { RootState } from "../../redux/store";
-
 import { responseToast } from "../../utils/features";
-import Loader from "../../components/Loader";
+import { CustomError } from "../../types/apiTypes";
+import { useAddCoinsMutation } from "../../redux/api/adminAPI";
 
 interface DataType {
+  _id: string;
   name: string;
-  email: string;
   gender: string;
-  role: string;
   phone: number;
+  addCoins: ReactElement;
   action: ReactElement;
 }
 
 const columns: Column<DataType>[] = [
-
+  {
+    Header: "ID",
+    accessor: "_id",
+  },
   {
     Header: "Name",
     accessor: "name",
@@ -33,12 +38,12 @@ const columns: Column<DataType>[] = [
     accessor: "gender",
   },
   {
-    Header: "Email",
-    accessor: "email",
+    Header: "Phone",
+    accessor: "phone",
   },
   {
-    Header: "Role",
-    accessor: "role",
+    Header: "Add Coins",
+    accessor: "addCoins",
   },
   {
     Header: "Action",
@@ -56,6 +61,7 @@ const Customers = () => {
   const [rows, setRows] = useState<DataType[]>([]);
 
   const [deleteUser] = useDeleteUserMutation();
+  const [addCoins] = useAddCoinsMutation();
 
   const deleteHandler = async (userId: string, userRole: string) => {
     if (userRole === "admin")
@@ -64,23 +70,30 @@ const Customers = () => {
     responseToast(res, null, "");
   };
 
+  const addCoinsHandler = async (userId: string, coins: number) => {
+    const res = await addCoins({ userId, coins });
+    responseToast(res, null, "");
+  };
+
   if (isError) {
-    // toast.error("error");
-    console.log(error);
-    console.log(user);
-    console.log(document.cookie);
+    const err = error as CustomError;
+    toast.error(err.data.message);
   }
 
   useEffect(() => {
     if (data) {
       setRows(
         data.users.map((i) => ({
+          _id: i._id,
           name: i.name,
-          email: i.email,
           gender: i.gender,
-          role: i.role,
           phone: i.phone,
 
+          addCoins: (
+            <button onClick={() => addCoinsHandler(i._id, i.coins)}>
+              <BiCoinStack />
+            </button>
+          ),
           action: (
             <button onClick={() => deleteHandler(i._id, i.role)}>
               <FaTrash />
@@ -101,8 +114,7 @@ const Customers = () => {
 
   return (
     <div className="adminContainer">
-     
-      <main>{isLoading ? <Loader  /> : Table}</main>
+      <main>{isLoading ? <Loader /> : Table}</main>
     </div>
   );
 };

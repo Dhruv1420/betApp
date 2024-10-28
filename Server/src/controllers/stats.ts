@@ -1,6 +1,5 @@
 import { TryCatch } from "../middlewares/error.js";
 import { User } from "../models/user.js";
-import { AuthRequest } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 
 export const addCoins = TryCatch(async (req, res, next) => {

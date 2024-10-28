@@ -44,11 +44,15 @@ export const userAPI = createApi({
       query: ({ userId, adminUserId }) => ({
         url: `${userId}?id=${adminUserId}`,
         method: "DELETE",
+        credentials: "include",
       }),
       invalidatesTags: ["users"],
     }),
     allUsers: builder.query<UsersResponse, string>({
-      query: (id) => `all?id=${id}`,
+      query: (id) => ({
+        url: `all?id=${id}`,
+        credentials: "include",
+      }),
       providesTags: ["users"],
     }),
   }),
@@ -61,7 +65,6 @@ export const getUser = async (id: string) => {
   return data;
 };
 
-// Export hooks for usage in functional components
 export const {
   useRegisterMutation,
   useLoginMutation,
