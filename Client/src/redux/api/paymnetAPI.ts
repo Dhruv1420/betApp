@@ -37,10 +37,6 @@ export const paymentAPI = createApi({
       }),
       invalidatesTags: ["payment"],
     }),
-    fetchPayment: builder.query<PaymentResponse, string>({
-      query: (id) => `fetch/${id}`,
-      providesTags: ["payment"],
-    }),
   }),
 });
 
@@ -55,5 +51,4 @@ export const {
   useCreatePaymentIntentMutation,
   usePaymentDetailsMutation,
   useWithdrawRequestMutation,
-  useFetchPaymentQuery,
 } = paymentAPI;

@@ -10,7 +10,6 @@ import { userExist, userNotExist } from "./redux/reducer/userReducer";
 import { RootState } from "./redux/store";
 
 import ProtectedRoute from "./components/ProtectedRoute";
-import { Co2Sharp } from "@mui/icons-material";
 
 const Home = lazy(() => import("./pages/Home"));
 const Lottery = lazy(() => import("./pages/lottery"));
@@ -22,22 +21,20 @@ const Victory = lazy(() => import("./pages/victory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Payment = lazy(() => import("./pages/Payment"));
 const Users = lazy(() => import("./pages/admin/users"));
-const AdminHome= lazy(() => import("./pages/admin/adminHome"));
+const AdminHome = lazy(() => import("./pages/admin/adminHome"));
 const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 
 const App = () => {
-  const { user, isAdmin, loading } = useSelector(
+  const { user, loading } = useSelector(
     (state: RootState) => state.userReducer
   );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (user) {
-      axios
-        .get(`${server}/api/v1/user/${user._id}`, { withCredentials: true })
-        .then(({ data }) => dispatch(userExist(data.user)))
-        .catch(() => dispatch(userNotExist()));
-    } else dispatch(userNotExist());
+    axios
+      .get(`${server}/api/v1/user/me`, { withCredentials: true })
+      .then(({ data }) => dispatch(userExist(data.user)))
+      .catch(() => dispatch(userNotExist()));
   }, [dispatch]);
 
   return loading ? (
@@ -76,6 +73,8 @@ const App = () => {
             <Route path="/victory" element={<Victory />} />
             <Route path="/payment" element={<Payment />} />
           </Route>
+
+          {/* Admin Routes */}
           <Route
             element={
               <ProtectedRoute
@@ -85,13 +84,11 @@ const App = () => {
               />
             }
           >
-            {/* Admin Routes */}
-            <Route path="/users" element={<Users />}/>
-            <Route path="/admin" element={<AdminHome />}/>
-            <Route path="/lottrystart" element={<Lottrystart />}
+            <Route path="/users" element={<Users />} />
+            <Route path="/admin" element={<AdminHome />} />
+            <Route path="/lottrystart" element={<Lottrystart />} />
+          </Route>
 
-            />
-            </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

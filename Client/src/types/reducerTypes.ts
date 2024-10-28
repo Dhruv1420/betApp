@@ -2,6 +2,23 @@ import { User } from "./types";
 
 export interface UserReducerInitialState {
   user: User | null;
-  isAdmin: boolean;
   loading: boolean;
+}
+
+export interface betReducerInitialState {
+  bet: [
+    {
+      time: string;
+      number: number;
+      amount: number;
+    }
+  ];
+  number: number;
+  amount: number;
+  loading: boolean;
+}
+
+export interface PaymentHistoryType {
+  amount: number;
+  referenceNumber: string;
 }

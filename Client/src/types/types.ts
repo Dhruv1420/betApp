@@ -22,3 +22,9 @@ export type User = {
     }
   ];
 };
+
+export type Bet = {
+  time: string;
+  number: number;
+  amount: number;
+};

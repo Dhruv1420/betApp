@@ -38,3 +38,17 @@ export interface WithdrawRequest {
   _id: string;
   coins: number;
 }
+
+export type BetResponse = {
+  success: boolean;
+  message: string;
+  number: number;
+  amount: number;
+};
+
+export type BetType = {
+  time: Date;
+  number: number;
+  amount: number;
+  _id: string;
+};

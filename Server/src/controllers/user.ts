@@ -48,6 +48,17 @@ export const login = TryCatch(async (req, res, next) => {
   sendToken(res, user, 200, `Welcome Back, ${user.name}`);
 });
 
+export const getMyProfile = TryCatch(async (req: AuthRequest, res, next) => {
+  const user = await User.findById(req.user);
+
+  if (!user) return next(new ErrorHandler("User Not Found", 404));
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
+
 export const logout = TryCatch(async (req, res) => {
   return res
     .status(200)

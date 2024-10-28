@@ -69,8 +69,6 @@ const Customers = () => {
     console.log(error);
     console.log(user);
     console.log(document.cookie);
-
-
   }
 
   useEffect(() => {

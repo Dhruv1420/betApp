@@ -4,7 +4,6 @@ import { User } from "../../types/types";
 
 const initialState: UserReducerInitialState = {
   user: null,
-  isAdmin: false,
   loading: true,
 };
 

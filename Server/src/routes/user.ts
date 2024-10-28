@@ -2,6 +2,7 @@ import express from "express";
 import {
   deleteUser,
   getAllUsers,
+  getMyProfile,
   getUser,
   login,
   logout,
@@ -16,6 +17,8 @@ app.post("/new", register);
 app.post("/login", login);
 
 app.use(isAuthenticated);
+
+app.get("/me", getMyProfile);
 
 app.use("/logout", logout);
 

@@ -1,37 +1,49 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import BottomNav from "../components/Header";
+import { addBet } from "../redux/reducer/betReducer";
+import { RootState } from "../redux/store";
 import "../styles/victory.scss";
 
-interface TableData {
-  Time: number;
-  Number: number;
-  Amount: string;
-  // : number;
-  // amount: string;
-  // status: string;
-}
-
 const App: React.FC = () => {
-  const tableData: TableData[] = [
-    // { sum: 19, scheme: 1, period: '20210504181', empty: 44, amount: '44', status: 'Activated' },
-    // { sum: 18, scheme: 1, period: '20210504181', empty: 7, amount: '7', status: 'Activated' },
-    // { sum: 17, scheme: 2, period: '20210504181', empty: 56, amount: '56', status: 'Activated' },
-    // { sum: 16, scheme: 2, period: '20210504181', empty: 9, amount: '9', status: 'Activated' },
-    // { sum: 15, scheme: 3, period: '20210504181', empty: 14, amount: '14', status: 'Activated' },
-    // { sum: 14, scheme: 3, period: '20210504181', empty: 4, amount: '4', status: 'Activated' },
-    // { sum: 13, scheme: 4, period: '20210504181', empty: 17, amount: '17', status: 'Activated' },
-    // { sum: 12, scheme: 4, period: '20210504181', empty: 3, amount: '3', status: 'Activated' },
-    // { sum: 11, scheme: 5, period: '20210504181', empty: 11, amount: '11', status: 'Activated' },
-    // { sum: 10, scheme: 4, period: '20210504181', empty: 12, amount: '12', status: 'Activated' },
-    // { sum: 9, scheme: 4, period: '20210504181', empty: 1, amount: '1', status: 'Activated' },
-    // { sum: 8, scheme: 3, period: '20210504181', empty: 23, amount: '23', status: 'Activated' },
-    // { sum: 7, scheme: 3, period: '20210504181', empty: 20, amount: '20', status: 'Activated' },
-    // { sum: 6, scheme: 2, period: '20210504181', empty: 6, amount: '6', status: 'Activated' },
-    // { sum: 5, scheme: 2, period: '20210504181', empty: 0, amount: '0', status: 'Activated' },
-    // { sum: 4, scheme: 1, period: '20210504181', empty: 16, amount: '16', status: 'Activated' },
-    // { sum: 3, scheme: 1, period: '20210504181', empty: 69, amount: '69', status: 'Activated' },
-    // { sum: 2, scheme: 1, period: '20210504181', empty: 6, amount: '69', status: 'Activated' }
-  ];
+  const { bet, number, amount } = useSelector(
+    (state: RootState) => state.betReducer
+  );
+  const intervalRef = useRef<number | null>(null);
+  const dispatch = useDispatch();
+
+  const generateRandomNumber = () => {
+    let num;
+    do {
+      num = Math.floor(Math.random() * 18) + 2;
+    } while (num === number);
+    return num;
+  };
+
+  const generateAndStoreRandomNumber = () => {
+    const newNumber = generateRandomNumber();
+
+    const newTime = new Date().toISOString();
+    let newAmount = amount;
+    if (number === 7 || number === 8 || number === 14 || number === 15)
+      newAmount += 0.09 * amount;
+    else if (number === 5 || number === 6 || number === 16 || number === 17)
+      newAmount += 0.06 * amount;
+    else if (number === 9 || number === 10 || number === 12 || number === 13)
+      newAmount += 0.12 * amount;
+    else if (number === 11) newAmount += 0.15 * amount;
+    else newAmount += 0.03 * amount;
+
+    dispatch(addBet({ number: newNumber, time: newTime, amount: newAmount }));
+  };
+
+  useEffect(() => {
+    intervalRef.current = setInterval(generateAndStoreRandomNumber, 300 * 1000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [dispatch]);
 
   return (
     <div className="app">
@@ -53,19 +65,29 @@ const App: React.FC = () => {
         <table>
           <thead>
             <tr>
-              <th>TIme</th>
+              <th>Time</th>
               <th>Number</th>
               <th>Amount</th>
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row, index) => (
-              <tr key={index}>
-                <td>{row.Time}</td>
-                <td>{row.Number}</td>
-                <td>{row.Amount}</td>
-              </tr>
-            ))}
+            {bet
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(b.time).getTime() - new Date(a.time).getTime()
+              )
+              .map((row, index) => (
+                <tr key={index}>
+                  <td>
+                    {new Date(row.time).toLocaleTimeString("en-US", {
+                      hour12: false,
+                    })}
+                  </td>
+                  <td>{row.number}</td>
+                  <td>{row.amount}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
