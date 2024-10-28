@@ -66,6 +66,12 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      handleLogin();
+    }
+  };
+  
 
   return (
     <>
@@ -95,6 +101,7 @@ const Login = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
 
             <TextField
@@ -109,6 +116,7 @@ const Login = () => {
               onChange={(e) => {
                 setPassword(e.target.value);
               }}
+              onKeyDown={handleKeyDown}
             />
 
             <Button

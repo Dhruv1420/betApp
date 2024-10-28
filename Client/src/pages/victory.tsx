@@ -194,7 +194,7 @@ const App = () => {
     <div className="app">
       {/* Header Section */}
       <div className="header">
-        <img src="/logo.png" alt="Logo" className="logo" />
+       
         <div className="user-info">
           <p>
             Username: <span className="font-bold">{user?.name}</span>
@@ -203,6 +203,7 @@ const App = () => {
             Balance: <span className="font-bold">{user?.coins}</span>
           </p>
         </div>
+        <p>Bets are scheduled to be placed every 5 minutes. Countdown to the next placement!</p>
         <Link to={"/login"} onClick={logoutHandler} className="exit-btn">
           Exit
         </Link>
@@ -249,6 +250,8 @@ const App = () => {
         <button className="one-click-btn open">One-click open</button>
         <button className="one-click-btn close">One-click close</button>
       </div>
+      <br />
+      <br />
       <BottomNav />
     </div>
   );

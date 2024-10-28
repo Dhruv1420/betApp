@@ -50,6 +50,7 @@ const App: React.FC = () => {
       {/* Header Section */}
       <div className="header">
         <h1>Lottry Result</h1>
+        <p>Bets are scheduled to be placed every 5 minutes. Countdown to the next placement!</p>
       </div>
 
       {/* Tab Section */}

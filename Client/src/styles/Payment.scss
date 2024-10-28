@@ -1,6 +1,6 @@
 /* payment.scss */
 
-$primary-color: #4caf50; // You can change this to your preferred primary color
+$primary-color: #4e44ce; // You can change this to your preferred primary color
 $secondary-color: #ffffff;
 $font-family: 'Arial', sans-serif;
 
@@ -16,7 +16,13 @@ $font-family: 'Arial', sans-serif;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   font-family: $font-family;
+  transform: translateY(50%);
 
+  @media (max-width: 600px) {
+    width: 100%;
+    padding: 1rem;
+  }
+  
   h1 {
     font-size: 2rem;
     margin-bottom: 1.5rem;

@@ -87,7 +87,7 @@ function App() {
   return (
     <div>
       {/* Top Navigation */}
-      <AppBar position="static" color="primary">
+      <AppBar position="static" sx={{ backgroundColor: "#4e44ce" }}>
         <Toolbar>
           <IconButton
             edge="start"

@@ -76,10 +76,12 @@ const Profile = () => {
           sx={{ width: 80, height: 80 }}
         />
         <Typography variant="h6" mt={2}>
+        <span style={{ color: "Black", fontWeight:"bolder", }}>
           {user?.name}
+          </span>
         </Typography>
-        <Typography variant="h5" color="primary" mt={1}>
-          Balance: <span style={{ color: "orange" }}>{user?.coins}</span>
+        <Typography variant="h5" color="Black" mt={1}>
+          Balance: <span style={{ color: "Red", fontWeight:"bolder" }}>{user?.coins} coins</span>
         </Typography>
         <Box
           display="flex"
@@ -116,19 +118,19 @@ const Profile = () => {
 
       {/* Account Options */}
       <List>
-        <ListItem component="button" onClick={handleOpenProfile}>
+        <ListItem component="button" onClick={handleOpenProfile}sx={{ cursor: 'pointer' }}>
           <ListItemText primary="Profile" />
         </ListItem>
-        <ListItem component="button" onClick={handleOpenDeposit}>
+        <ListItem component="button" onClick={handleOpenDeposit}sx={{ cursor: 'pointer' }} >
           <ListItemText primary="Deposit Record" />
         </ListItem>
-        <ListItem component="button" onClick={handleOpenWithdraw}>
+        <ListItem component="button" onClick={handleOpenWithdraw}sx={{ cursor: 'pointer' }}>
           <ListItemText primary="Withdrawal Record" />
         </ListItem>
-        <ListItem component="button">
+        <ListItem component="button"sx={{ cursor: 'pointer' }}>
           <ListItemText primary="Lottery Record" />
         </ListItem>
-        <ListItem component="button">
+        <ListItem component="button"sx={{ cursor: 'pointer' }}>
           <ListItemText primary="Logout" onClick={logoutHandler} />
         </ListItem>
       </List>

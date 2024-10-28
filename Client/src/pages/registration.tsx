@@ -82,6 +82,11 @@ const Register = () => {
       setIsLoading(false);
     }
   };
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      handleRegister();
+    }
+  };
 
   return (
     <>
@@ -112,6 +117,7 @@ const Register = () => {
                   autoFocus
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
 
@@ -124,6 +130,7 @@ const Register = () => {
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -135,6 +142,7 @@ const Register = () => {
                   name="referalCode"
                   value={referalCode}
                   onChange={(e) => setReferalCode(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -146,6 +154,7 @@ const Register = () => {
                   name="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -178,6 +187,7 @@ const Register = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </Grid>
             </Grid>

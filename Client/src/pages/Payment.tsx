@@ -86,7 +86,9 @@ const Payment = () => {
           <button onClick={submitHandler}>Pay</button>
         </div>
       )}
+      
     </div>
+    
   );
 };
 

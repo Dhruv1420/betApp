@@ -33,6 +33,7 @@ const BottomNav: React.FC = () => {
               opacity: 1, // Ensure label is fully visible
               fontSize: '1rem', // Adjust font size if needed
               transition: 'none', // Remove the default transition
+              cursor: 'pointer' 
             },
             color: 'white',
           }} 
