@@ -64,6 +64,7 @@ export type BetType = {
 export type addCoinsType = {
   userId: string;
   coins: number;
+  adminUserId: string; 
 };
 
 export type addCoinsResponse = {

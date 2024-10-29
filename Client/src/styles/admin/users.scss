@@ -1,0 +1,200 @@
+.adminContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    color: #333;
+    background-color: #f2f4f7;
+    min-height: 100vh;
+  
+    main {
+      width: 100%;
+      max-width: 1200px;
+      padding: 1.5rem;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+  
+      &:hover {
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+  
+  // Table Styling
+  .dashboardProductBox {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid #eaeaea;
+      text-align: left;
+      color: #4a4a4a;
+  
+      &:first-child {
+        border-left: none;
+      }
+  
+      &:last-child {
+        border-right: none;
+      }
+    }
+  
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #606f7b;
+    }
+  
+    td {
+      font-size: 0.95rem;
+  
+      button {
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #ff6b6b;
+        font-size: 1.25rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+  
+        &:hover {
+          transform: scale(1.15);
+          color: #ff3b3b;
+        }
+  
+        &.coinBtn {
+          color: #1e90ff;
+          transition: color 0.3s ease;
+  
+          &:hover {
+            color: #1c7ed6;
+          }
+        }
+      }
+    }
+  
+    // Responsive adjustments
+    @media (max-width: 768px) {
+      th, td {
+        padding: 0.8rem;
+        font-size: 0.85rem;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+  
+      th, td {
+        padding: 0.6rem;
+      }
+    }
+  }
+  
+  // Dialog Overlay and Content
+  .dialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    animation: fadeIn 0.3s ease-in-out;
+  
+    .dialogContent {
+      background: #ffffff;
+      padding: 2rem;
+      width: 90%;
+      max-width: 420px;
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: slideIn 0.4s ease-out;
+      transform-origin: center;
+  
+      h2 {
+        margin-bottom: 1.2rem;
+        font-size: 1.5rem;
+        color: #333;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+      }
+  
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        transition: border-color 0.3s ease;
+  
+        &:focus {
+          outline: none;
+          border-color: #1e90ff;
+        }
+      }
+  
+      button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 1rem;
+        margin: 0 0.5rem;
+        font-weight: 600;
+        transition: background 0.3s ease, transform 0.3s ease;
+        outline: none;
+  
+        &:first-of-type {
+          background-color: #28a745;
+          color: #ffffff;
+  
+          &:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+          }
+        }
+  
+        &:last-of-type {
+          background-color: #dc3545;
+          color: #ffffff;
+  
+          &:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+          }
+        }
+      }
+    }
+  }
+  
+  // Animations
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  

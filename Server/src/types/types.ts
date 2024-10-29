@@ -13,8 +13,14 @@ export interface AuthRequest extends Request {
   user?: string;
 }
 
-export type ControllerType = (
-  req: Request,
-  res: Response,
+
+export type ControllerType<
+  Params = Record<string, any>, 
+  ResBody = any, 
+  ReqBody = any, 
+  ReqQuery = Record<string, any>
+> = (
+  req: Request<Params, ResBody, ReqBody, ReqQuery>,
+  res: Response<ResBody>,
   next: NextFunction
 ) => Promise<void | Response<any, Record<string, any>>>;

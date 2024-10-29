@@ -12,7 +12,7 @@ const BottomNav: React.FC = () => {
   return (
     <BottomNavigation
       value={value}
-      onChange={(event, newValue) => {
+      onChange={(_, newValue) => {
         setValue(newValue);
       }}
       showLabels
@@ -23,7 +23,7 @@ const BottomNav: React.FC = () => {
         backgroundColor: '#4e44ce', // Custom background color
       }}
     >
-      <Link to="/lottrystart" style={{ textDecoration: 'none', flex: 1 }}>
+      <Link to="/" style={{ textDecoration: 'none', flex: 1 }}>
         <BottomNavigationAction 
           label="Home" 
           icon={<HomeIcon style={{ color: 'white' }} />} 

@@ -9,9 +9,9 @@ export const adminAPI = createApi({
   tagTypes: ["admin"],
   endpoints: (builder) => ({
     addCoins: builder.mutation<addCoinsResponse, addCoinsType>({
-      query: ({ userId, coins }) => ({
-        url: `addcoins/${userId}`,
-        method: "POST",
+      query: ({ userId, coins,adminUserId }) => ({
+        url: `addcoins/${userId}?id=${adminUserId}`,
+        method: "PUT",
         body: { coins },
         credentials: "include",
       }),
