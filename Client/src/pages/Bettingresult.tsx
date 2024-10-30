@@ -91,16 +91,10 @@ export default function AdminBettingInterface() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className="w-full max-w-md mx-auto p-6">
       <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Betting Interface</h1>
         
-        <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-sm font-medium text-gray-600">
-            {isConnected ? "Connected" : "Disconnected"}
-          </span>
-        </div>
+      
 
         <div className="space-y-4">
           <div>

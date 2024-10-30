@@ -23,8 +23,18 @@ export type User = {
   ];
 };
 
-export type Bet = {
-  time: string;
+export interface GeneratedNumber {
+  generatedNumber: number;
+  updatedAmount: number;
+  timestamp: string;
+}
+
+export interface Bet {
+  _id: string;
   number: number;
   amount: number;
-};
+  status: 'active' | 'completed';
+  generatedNumbers: GeneratedNumber[];
+  createdAt: string;
+  updatedAt: string;
+}

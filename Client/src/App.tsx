@@ -10,10 +10,14 @@ import { userExist, userNotExist } from "./redux/reducer/userReducer";
 import { RootState } from "./redux/store";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+// import BettingResult from "./pages/Bettingresult";
+// import BettingComponent from "./pages/BettingComponent";
+import AdminComponent from "./pages/admin/AdminComponent";
+import UserComponent from "./pages/UserComponent";
 
 const Home = lazy(() => import("./pages/Home"));
 const Lottery = lazy(() => import("./pages/lottery"));
-const LotteryResult = lazy(() => import("./pages/lottryresult"));
+// const LotteryResult = lazy(() => import("./pages/lottryresult"));
 const Profile = lazy(() => import("./pages/profile"));
 const Login = lazy(() => import("./pages/login"));
 const Register = lazy(() => import("./pages/registration"));
@@ -69,11 +73,11 @@ const App = () => {
           >
             <Route path="/" element={<Home />} />
             <Route path="/lottery" element={<Lottery />} />
-            <Route path="/lottryresult" element={<LotteryResult />} />
+            <Route path="/lottryresult" element={<UserComponent />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/victory" element={<Victory />} />
             <Route path="/payment" element={<Payment />} />
-            <Route path="/withdraw" element={<Withdraw />}/>
+            <Route path="/withdraw" element={<Withdraw />} />
           </Route>
 
           {/* Admin Routes */}
@@ -88,7 +92,7 @@ const App = () => {
           >
             <Route path="/admin" element={<AdminHome />} />
             <Route path="/admin/users" element={<Users />} />
-            <Route path="/admin/lottrystart" element={<Lottrystart />} />
+            <Route path="/admin/lottrystart" element={<AdminComponent />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
