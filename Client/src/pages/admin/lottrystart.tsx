@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { io, Socket } from 'socket.io-client';
 
 interface ServerToClientEvents {
   betStarted: (data: { betId: string; message: string }) => void;

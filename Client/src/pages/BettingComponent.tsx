@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios';
 
 const socket: Socket = io('http://localhost:3000');
+
+interface BetStoppedData {
+  lastGeneratedNumber: number;
+  finalAmount: number;
+}
 
 interface GeneratedNumber {
   generatedNumber: number;
@@ -12,11 +17,6 @@ interface GeneratedNumber {
 
 interface BetStartedData {
   betId: string;
-}
-
-interface BetStoppedData {
-  lastGeneratedNumber: number;
-  finalAmount: number;
 }
 
 interface ErrorData {
@@ -46,13 +46,16 @@ export default function BettingComponent() {
     });
 
     socket.on('betStopped', (data: BetStoppedData) => {
-      setGeneratedNumbers((prev) => [
-        ...prev,
-        {
-          generatedNumber: data.lastGeneratedNumber,
-          updatedAmount: data.finalAmount,
-        },
-      ]);
+      if (betId) {
+        setGeneratedNumbers((prev) => [
+          ...prev,
+          {
+            generatedNumber: data.lastGeneratedNumber,
+            updatedAmount: data.finalAmount,
+            betId, // Include the current betId here
+          },
+        ]);
+      }
       setBetId(null);
     });
 
@@ -66,7 +69,7 @@ export default function BettingComponent() {
       socket.off('betStopped');
       socket.off('error');
     };
-  }, []);
+  }, [betId]);
 
   const handleStartBet = () => {
     socket.emit('startBet', { number: parseInt(number), amount: parseFloat(amount) });

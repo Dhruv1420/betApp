@@ -104,7 +104,7 @@ const startBetInterval = async (bet: any) => {
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2)
     });
-  }, 300000);
+  }, 3000);
 
   activeIntervals[bet._id.toString()] = intervalId;
 };

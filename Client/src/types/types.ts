@@ -37,4 +37,5 @@ export interface Bet {
   generatedNumbers: GeneratedNumber[];
   createdAt: string;
   updatedAt: string;
+  time:string;
 }

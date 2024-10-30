@@ -1,10 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
+import { useState, useEffect } from 'react';
+import io, { Socket } from 'socket.io-client';
 import axios from 'axios';
-import { Bet } from '../../types/types';
 import toast from 'react-hot-toast';
+import { server } from '../../contants/keys';
 
-const socket = io('http://localhost:3000');
+type GeneratedNumber = {
+  generatedNumber: number;
+  updatedAmount: number;
+  timestamp: string;
+};
+
+type Bet = {
+  _id: string;
+  number: number;
+  amount: number;
+  status: 'active' | 'completed';
+  generatedNumbers: GeneratedNumber[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+type BetStartedEvent = { betId: string };
+type NewGeneratedNumberEvent = { betId: string; generatedNumber: number; updatedAmount: string };
+type BetStoppedEvent = { betId: string; lastGeneratedNumber: number; finalAmount: string };
+type ErrorEvent = { message: string };
+
+const socket: Socket = io(`${server}`);
 
 export default function AdminComponent() {
   const [number, setNumber] = useState<string>('');
@@ -15,10 +36,8 @@ export default function AdminComponent() {
   useEffect(() => {
     const fetchBets = async () => {
       try {
-        const response = await axios.get<Bet[]>('http://localhost:3000/api/v1/bets', {
-          headers: {
-            'Accept': 'application/json'
-          }
+        const response = await axios.get<Bet[]>(`${server}/api/v1/bets`, {
+          headers: { 'Accept': 'application/json' }
         });
         if (Array.isArray(response.data)) {
           setBets(response.data);
@@ -34,7 +53,7 @@ export default function AdminComponent() {
 
     fetchBets();
 
-    socket.on('betStarted', (data: { betId: string }) => {
+    socket.on('betStarted', (data: BetStartedEvent) => {
       setBets(prevBets => [{
         _id: data.betId,
         number: parseInt(number),
@@ -49,7 +68,7 @@ export default function AdminComponent() {
       setError('');
     });
 
-    socket.on('newGeneratedNumber', (data: { betId: string; generatedNumber: number; updatedAmount: string }) => {
+    socket.on('newGeneratedNumber', (data: NewGeneratedNumberEvent) => {
       setBets(prevBets => prevBets.map(bet => {
         if (bet._id === data.betId) {
           return {
@@ -68,7 +87,7 @@ export default function AdminComponent() {
       }));
     });
 
-    socket.on('betStopped', (data: { betId: string; lastGeneratedNumber: number; finalAmount: string }) => {
+    socket.on('betStopped', (data: BetStoppedEvent) => {
       setBets(prevBets => prevBets.map(bet => {
         if (bet._id === data.betId) {
           return {
@@ -88,7 +107,7 @@ export default function AdminComponent() {
       }));
     });
 
-    socket.on('error', (data: { message: string }) => {
+    socket.on('error', (data: ErrorEvent) => {
       setError(data.message);
     });
 
@@ -157,14 +176,12 @@ export default function AdminComponent() {
                 </li>
               ))}
             </ul>
-        
-              <button
-                onClick={() => handleStopBet(bet._id)}
-                className="bg-red-500 text-white px-4 py-2 rounded mt-2"
-              >
-                Stop Bet
-              </button>
-          
+            <button
+              onClick={() => handleStopBet(bet._id)}
+              className="bg-red-500 text-white px-4 py-2 rounded mt-2"
+            >
+              Stop Bet
+            </button>
           </div>
         ))
       ) : (

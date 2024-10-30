@@ -3,8 +3,9 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import { Bet } from '../types/types';
 import BottomNav from '../components/Header';
+import { server } from '../contants/keys';
 
-const socket = io('http://localhost:3000');
+const socket = io(`${server}`);
 
 export default function UserComponent() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -13,7 +14,7 @@ export default function UserComponent() {
   useEffect(() => {
     const fetchBets = async () => {
       try {
-        const response = await axios.get<Bet[]>('http://localhost:3000/api/v1/bets', {
+        const response = await axios.get<Bet[]>(`${server}/api/v1/bets`, {
           headers: {
             'Accept': 'application/json'
           }
