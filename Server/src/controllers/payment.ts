@@ -2,16 +2,13 @@ import QRCode from "qrcode";
 import { TryCatch } from "../middlewares/error.js";
 import { User } from "../models/user.js";
 import ErrorHandler from "../utils/utility-class.js";
+import { UpiId } from "../models/upiId.js";
 
 export const createPaymentIntent = TryCatch(async (req, res, next) => {
   const { amount } = req.body;
   if (!amount) return next(new ErrorHandler("Please enter amount", 400));
 
-  const upiIds = [
-    "jana240931296@janabank",
-    "anuragharshana@ybl",
-    "6266201874aaa@axl",
-  ];
+  const upiIds = await UpiId.find();
   const randomIndex = Math.floor(Math.random() * upiIds.length);
   const upiId = upiIds[randomIndex];
   const receiverName = "Victory Online";

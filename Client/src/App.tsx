@@ -25,6 +25,7 @@ const Victory = lazy(() => import("./pages/victory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Payment = lazy(() => import("./pages/Payment"));
 const Users = lazy(() => import("./pages/admin/users"));
+const UpiIds = lazy(() => import("./pages/admin/upiIds"));
 const AdminHome = lazy(() => import("./pages/admin/adminHome"));
 // const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 const Withdraw = lazy(() => import("./pages/withdraw"));
@@ -93,6 +94,7 @@ const App = () => {
             <Route path="/admin" element={<AdminHome />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/lottrystart" element={<AdminComponent />} />
+            <Route path="/admin/upi" element={<UpiIds />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

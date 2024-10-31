@@ -8,6 +8,8 @@ import { server } from "../contants/keys";
 import { useDispatch } from "react-redux";
 import { userNotExist } from "../redux/reducer/userReducer";
 import toast from "react-hot-toast";
+import { useCallback, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 interface TableData {
   sum: number;
@@ -165,10 +167,126 @@ const tableData: TableData[] = [
   },
 ];
 
+interface ServerToClientEvents {
+  betStarted: (data: { betId: string; message: string }) => void;
+  betUpdate: (data: {
+    betId: string;
+    generatedNumber: number;
+    updatedAmount: string;
+  }) => void;
+  betEnded: (data: { betId: string }) => void;
+  betStopped: (data: {
+    betId: string;
+    lastGeneratedNumber: number;
+    finalAmount: string;
+  }) => void;
+  success: (data: { message: string }) => void;
+  error: (data: { message: string }) => void;
+}
+
+interface ClientToServerEvents {
+  startBet: (data: { number: number; amount: number }) => void;
+  stopBet: (data: { betId: string }) => void;
+  activeUser: (data: { userId: string }) => void;
+  inactiveUser: (data: { userId: string }) => void;
+}
+
 const App = () => {
+  const [socket, setSocket] = useState<Socket<
+    ServerToClientEvents,
+    ClientToServerEvents
+  > | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [start, setStart] = useState(false);
+  const [end, setEnd] = useState(false);
+  const [bet, setBet] = useState<{ number: number; amount: string }>();
+
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const dispatch = useDispatch();
+
+  const connectSocket = useCallback(() => {
+    const newSocket = io(server, {
+      path: "/socket.io/",
+      transports: ["websocket"],
+    });
+
+    newSocket.on("connect", () => {
+      setIsConnected(true);
+    });
+
+    newSocket.on("disconnect", () => {
+      setIsConnected(false);
+    });
+
+    newSocket.on("success", (data) => {
+      toast.success(data.message);
+    });
+
+    newSocket.on("error", (error) => {
+      toast.error(error.message);
+    });
+
+    newSocket.on("betStarted", () => {
+      setStart(true);
+      setEnd(false);
+    });
+
+    newSocket.on("betUpdate", (data) => {
+      setBet({ number: data.generatedNumber, amount: data.updatedAmount });
+    });
+
+    newSocket.on("betStopped", (data) => {
+      setEnd(true);
+      setStart(false);
+      setBet({ number: data.lastGeneratedNumber, amount: data.finalAmount });
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    connectSocket();
+  }, [connectSocket]);
+
+  const startBetting = () => {
+    if (!start) return toast.error("Bet not started yet");
+    if (end) return toast.error("Bet ended");
+    if (user) {
+      if (Number(bet?.amount) > user.coins)
+        return toast.error("Insufficient coins to start a bet");
+      if (user.status === "active")
+        return toast.error("You are already active");
+      if (user.status === "banned")
+        return toast.error("You are banned, Can't start a bet");
+
+      if (socket && isConnected) {
+        socket.emit("activeUser", { userId: user?._id });
+      } else {
+        toast.error("Not connected to server");
+      }
+    }
+  };
+
+  const stopBetting = () => {
+    if (!start) return toast.error("Bet not started yet");
+    if (end) return toast.error("Bet ended");
+    if (user) {
+      if (user.status === "inactive")
+        return toast.error("You are already inactive");
+      if (user.status === "banned") return toast.error("You are banned");
+
+      if (socket && isConnected) {
+        socket.emit("inactiveUser", { userId: user?._id });
+      } else {
+        toast.error("Not connected to server");
+      }
+    }
+  };
 
   const logoutHandler = async () => {
     try {
@@ -194,7 +312,6 @@ const App = () => {
     <div className="app">
       {/* Header Section */}
       <div className="header">
-       
         <div className="user-info">
           <p>
             Username: <span className="font-bold">{user?.name}</span>
@@ -203,7 +320,10 @@ const App = () => {
             Balance: <span className="font-bold">{user?.coins}</span>
           </p>
         </div>
-        <p>Bets are scheduled to be placed every 5 minutes. Countdown to the next placement!</p>
+        <p>
+          Bets are scheduled to be placed every 5 minutes. Countdown to the next
+          placement!
+        </p>
         <Link to={"/login"} onClick={logoutHandler} className="exit-btn">
           Exit
         </Link>
@@ -247,8 +367,12 @@ const App = () => {
 
       {/* Buttons Section */}
       <div className="buttons">
-        <button className="one-click-btn open">One-click open</button>
-        <button className="one-click-btn close">One-click close</button>
+        <button className="one-click-btn open" onClick={startBetting}>
+          One-click open
+        </button>
+        <button className="one-click-btn close" onClick={stopBetting}>
+          One-click close
+        </button>
       </div>
       <br />
       <br />
