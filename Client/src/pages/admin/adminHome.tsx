@@ -26,6 +26,15 @@ const adminHome = () => {
       >
         Lottery Control
       </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 2 }}
+        onClick={() => navigate("/admin/upi")}
+      >
+        UPI IDs
+      </Button>
     </>
   );
 };

@@ -1,12 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
-import { io, Socket } from 'socket.io-client';
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+import { io, Socket } from "socket.io-client";
+import { server } from "../../contants/keys";
 
 interface ServerToClientEvents {
   betStarted: (data: { betId: string; message: string }) => void;
-  betUpdate: (data: { betId: string; generatedNumber: number; updatedAmount: string }) => void;
+  betUpdate: (data: {
+    betId: string;
+    generatedNumber: number;
+    updatedAmount: string;
+  }) => void;
   betEnded: (data: { betId: string }) => void;
-  betStopped: (data: { betId: string; lastGeneratedNumber: number; finalAmount: string }) => void;
+  betStopped: (data: {
+    betId: string;
+    lastGeneratedNumber: number;
+    finalAmount: string;
+  }) => void;
   error: (data: { message: string }) => void;
 }
 
@@ -15,16 +24,21 @@ interface ClientToServerEvents {
   stopBet: (data: { betId: string }) => void;
 }
 
-export default function AdminBettingInterface() {
-  const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+const AdminBettingInterface = () => {
+  const [socket, setSocket] = useState<Socket<
+    ServerToClientEvents,
+    ClientToServerEvents
+  > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [number, setNumber] = useState<number>(0);
   const [amount, setAmount] = useState<number>(0);
   const [activeBetId, setActiveBetId] = useState<string | null>(null);
-  const [generatedNumbers, setGeneratedNumbers] = useState<Array<{ number: number; amount: string }>>([]);
+  const [generatedNumbers, setGeneratedNumbers] = useState<
+    Array<{ number: number; amount: string }>
+  >([]);
 
   const connectSocket = useCallback(() => {
-    const newSocket = io("http://localhost:3000", {
+    const newSocket = io(server, {
       path: "/socket.io/",
       transports: ["websocket"],
     });
@@ -49,7 +63,10 @@ export default function AdminBettingInterface() {
     });
 
     newSocket.on("betUpdate", (data) => {
-      setGeneratedNumbers((prev) => [...prev, { number: data.generatedNumber, amount: data.updatedAmount }]);
+      setGeneratedNumbers((prev) => [
+        ...prev,
+        { number: data.generatedNumber, amount: data.updatedAmount },
+      ]);
     });
 
     newSocket.on("betEnded", () => {
@@ -59,7 +76,10 @@ export default function AdminBettingInterface() {
 
     newSocket.on("betStopped", (data) => {
       setActiveBetId(null);
-      setGeneratedNumbers((prev) => [...prev, { number: data.lastGeneratedNumber, amount: data.finalAmount }]);
+      setGeneratedNumbers((prev) => [
+        ...prev,
+        { number: data.lastGeneratedNumber, amount: data.finalAmount },
+      ]);
       toast.success(`Bet stopped. Final amount: ${data.finalAmount}`);
     });
 
@@ -93,10 +113,16 @@ export default function AdminBettingInterface() {
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
       <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Betting Interface</h1>
-        
+        <h1 className="text-2xl font-bold text-gray-900">
+          Admin Betting Interface
+        </h1>
+
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <div
+            className={`w-3 h-3 rounded-full ${
+              isConnected ? "bg-green-500" : "bg-red-500"
+            }`}
+          />
           <span className="text-sm font-medium text-gray-600">
             {isConnected ? "Connected" : "Disconnected"}
           </span>
@@ -104,7 +130,12 @@ export default function AdminBettingInterface() {
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="number" className="block text-sm font-medium text-gray-700">Number</label>
+            <label
+              htmlFor="number"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Number
+            </label>
             <input
               type="number"
               id="number"
@@ -114,7 +145,12 @@ export default function AdminBettingInterface() {
             />
           </div>
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
+            <label
+              htmlFor="amount"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Amount
+            </label>
             <input
               type="number"
               id="amount"
@@ -130,7 +166,9 @@ export default function AdminBettingInterface() {
             onClick={handleStartBet}
             disabled={!isConnected || activeBetId !== null}
             className={`flex-1 px-4 py-2 rounded-lg font-medium text-white ${
-              !isConnected || activeBetId !== null ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+              !isConnected || activeBetId !== null
+                ? "bg-indigo-300 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
             }`}
           >
             Start Bet
@@ -139,7 +177,9 @@ export default function AdminBettingInterface() {
             onClick={handleStopBet}
             disabled={!isConnected || activeBetId === null}
             className={`flex-1 px-4 py-2 rounded-lg font-medium text-white ${
-              !isConnected || activeBetId === null ? 'bg-red-300 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
+              !isConnected || activeBetId === null
+                ? "bg-red-300 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
             }`}
           >
             Stop Bet
@@ -150,7 +190,10 @@ export default function AdminBettingInterface() {
           <h2 className="text-lg font-semibold mb-2">Generated Numbers</h2>
           <div className="space-y-2">
             {generatedNumbers.map((gen, index) => (
-              <div key={index} className="flex justify-between items-center bg-gray-100 p-2 rounded">
+              <div
+                key={index}
+                className="flex justify-between items-center bg-gray-100 p-2 rounded"
+              >
                 <span>Number: {gen.number}</span>
                 <span>Amount: {gen.amount}</span>
               </div>
@@ -160,4 +203,6 @@ export default function AdminBettingInterface() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminBettingInterface;

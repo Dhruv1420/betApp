@@ -61,10 +61,22 @@ export type BetType = {
   _id: string;
 };
 
+export type upiType = {
+  upiId: string;
+  _id: string;
+};
+
+export type upiTypeResponse = {
+  success: boolean;
+  message: string;
+  upiId?: string;
+  upiIds?: upiType[];
+};
+
 export type addCoinsType = {
   userId: string;
   coins: number;
-  adminUserId: string; 
+  adminUserId: string;
 };
 
 export type addCoinsResponse = {

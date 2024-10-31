@@ -7,12 +7,15 @@ import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middlewares/error.js";
 import { connectDB } from "./utils/features.js";
 import { corsOption } from "./constants/config.js";
+import { Bet } from "./models/bet.js";
+import { GeneratedBet } from "./models/generatedBet.js";
+
 import betRoute from "./routes/bet.js";
 import paymentRoute from "./routes/payment.js";
 import dashboardRoute from "./routes/stats.js";
 import userRoute from "./routes/user.js";
-import { Bet } from "./models/bet.js";
-import { GeneratedBet } from "./models/generatedBet.js";
+import upiIdRoute from "./routes/upiId.js";
+import { User } from "./models/user.js";
 
 config({
   path: "./.env",
@@ -28,9 +31,14 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:4173",
+      "*",
+    ],
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
   },
   path: "/socket.io/",
 });
@@ -45,25 +53,28 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/payment", paymentRoute);
 app.use("/api/v1/bet", betRoute);
 app.use("/api/v1/dashboard", dashboardRoute);
+app.use("/api/v1/upi", upiIdRoute);
 
 // New route to get all bets (active and completed) with their generated numbers
 app.get("/api/v1/bets", async (req, res) => {
   try {
     const bets = await Bet.find().sort({ createdAt: -1 }).limit(10);
-    const betsWithNumbers = await Promise.all(bets.map(async (bet) => {
-      const generatedNumbers = await GeneratedBet.find({ betId: bet._id }).sort({ timestamp: 1 });
-      return {
-        ...bet.toObject(),
-        generatedNumbers: generatedNumbers
-      };
-    }));
+    const betsWithNumbers = await Promise.all(
+      bets.map(async (bet) => {
+        const generatedNumbers = await GeneratedBet.find({
+          betId: bet._id,
+        }).sort({ timestamp: 1 });
+        return {
+          ...bet.toObject(),
+          generatedNumbers: generatedNumbers,
+        };
+      })
+    );
     res.json(betsWithNumbers);
   } catch (error) {
     res.status(500).json({ message: "Error fetching bets" });
   }
 });
-
-app.use(errorMiddleware);
 
 // Store active intervals
 const activeIntervals: { [key: string]: NodeJS.Timeout } = {};
@@ -84,6 +95,14 @@ const getIncreasePercentage = (userNum: number): number => {
   return 0.03;
 };
 
+const getIncreaseTimesProfit = (userNum: number): number => {
+  if ([7, 8, 14, 15].includes(userNum)) return 15;
+  if ([5, 6, 16, 17].includes(userNum)) return 22.5;
+  if ([9, 10, 12, 13].includes(userNum)) return 11.25;
+  if (userNum === 11) return 9;
+  return 45;
+};
+
 const startBetInterval = async (bet: any) => {
   let currentAmount = bet.amount;
   const increasePercentage = getIncreasePercentage(bet.number);
@@ -92,7 +111,18 @@ const startBetInterval = async (bet: any) => {
     const randomNum = generateRandomNumber(bet.number);
     currentAmount *= 1 + increasePercentage;
 
-    const generatedBet = await GeneratedBet.create({
+    const users = await User.find({ status: "active" });
+    users.forEach(async (user) => {
+      if (user.coins < currentAmount) {
+        io.emit("error", { message: "Insufficient coins available" });
+        user.status = "inactive";
+      } else {
+        user.coins -= currentAmount;
+      }
+      await user.save();
+    });
+
+    await GeneratedBet.create({
       betId: bet._id,
       generatedNumber: randomNum,
       updatedAmount: currentAmount,
@@ -102,16 +132,16 @@ const startBetInterval = async (bet: any) => {
     io.emit("newGeneratedNumber", {
       betId: bet._id,
       generatedNumber: randomNum,
-      updatedAmount: currentAmount.toFixed(2)
+      updatedAmount: currentAmount.toFixed(2),
     });
-  }, 3000);
+  }, 10*1000);
 
   activeIntervals[bet._id.toString()] = intervalId;
 };
 
 // Check for any active bets on server start and restart their intervals
 const initializeActiveBets = async () => {
-  const activeBets = await Bet.find({ status: 'active' });
+  const activeBets = await Bet.find({ status: "active" });
   for (const bet of activeBets) {
     startBetInterval(bet);
   }
@@ -124,15 +154,39 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("startBet", async ({ number, amount }) => {
     try {
-      const bet = await Bet.create({ number, amount, status: 'active' });
-      startBetInterval(bet);
+      if (number < 2 || number > 19)
+        socket.emit("error", { message: "Number should in between 2 and 19" });
+      else if (amount <= 0)
+        socket.emit("error", { message: "Amount should be poitive" });
+      else {
+        const bet = await Bet.create({ number, amount, status: "active" });
+        startBetInterval(bet);
 
-      socket.emit("betStarted", {
-        betId: bet._id,
-        message: "Bet started successfully",
-      });
+        socket.emit("betStarted", {
+          betId: bet._id,
+          message: "Bet started successfully",
+        });
+      }
     } catch (error) {
       socket.emit("error", { message: "Failed to start bet" });
+    }
+  });
+
+  socket.on("activeUser", async ({ userId }) => {
+    try {
+      await User.findByIdAndUpdate(userId, { status: "active" });
+      socket.emit("success", { message: "Status updated successfully" });
+    } catch (error) {
+      socket.emit("error", { message: "Failed to update user status" });
+    }
+  });
+
+  socket.on("inactiveUser", async ({ userId }) => {
+    try {
+      await User.findByIdAndUpdate(userId, { status: "inactive" });
+      socket.emit("success", { message: "Status updated successfully" });
+    } catch (error) {
+      socket.emit("error", { message: "Failed to update user status" });
     }
   });
 
@@ -145,13 +199,16 @@ io.on("connection", (socket: Socket) => {
 
         const bet = await Bet.findById(betId);
         if (bet) {
-          const lastGeneratedBet = await GeneratedBet.findOne({ betId }).sort({ timestamp: -1 });
-          
+          const lastGeneratedBet = await GeneratedBet.findOne({ betId }).sort({
+            timestamp: -1,
+          });
+
           if (lastGeneratedBet) {
             const increasePercentage = getIncreasePercentage(bet.number);
-            const finalAmount = lastGeneratedBet.updatedAmount * (1 + increasePercentage);
+            const finalAmount =
+              lastGeneratedBet.updatedAmount * (1 + increasePercentage);
 
-            const finalGeneratedBet = await GeneratedBet.create({
+            await GeneratedBet.create({
               betId: bet._id,
               generatedNumber: bet.number,
               updatedAmount: finalAmount,
@@ -160,7 +217,14 @@ io.on("connection", (socket: Socket) => {
 
             await Bet.findByIdAndUpdate(betId, {
               amount: finalAmount,
-              status: 'completed'
+              status: "completed",
+            });
+
+            const users = await User.find({ status: "active" });
+            users.forEach(async (user) => {
+              user.coins += finalAmount * getIncreaseTimesProfit(bet.number);
+              user.status = "inactive";
+              await user.save();
             });
 
             io.emit("betStopped", {
@@ -187,6 +251,8 @@ io.on("connection", (socket: Socket) => {
     console.log("Client disconnected:", socket.id);
   });
 });
+
+app.use(errorMiddleware);
 
 httpServer.listen(PORT, () => {
   console.log(`Server is working on port ${PORT}`);

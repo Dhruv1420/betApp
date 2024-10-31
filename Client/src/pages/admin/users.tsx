@@ -21,6 +21,7 @@ interface DataType {
   name: string;
   gender: string;
   phone: number;
+  referralCode: string;
   addCoins: ReactElement;
   action: ReactElement;
 }
@@ -41,6 +42,10 @@ const columns: Column<DataType>[] = [
   {
     Header: "Phone",
     accessor: "phone",
+  },
+  {
+    Header: "Referral Code",
+    accessor: "referralCode",
   },
   {
     Header: "Add Coins",
@@ -68,12 +73,17 @@ const Customers = () => {
   const [coinInput, setCoinInput] = useState<number>(0);
 
   const deleteHandler = async (userId: string, userRole: string) => {
-    if (userRole === "admin") return toast.error("Operation Invalid For This User");
+    if (userRole === "admin")
+      return toast.error("Operation Invalid For This User");
     const res = await deleteUser({ userId, adminUserId: user?._id as string });
     responseToast(res, null, "");
   };
 
-  const addCoinsHandler = async (userId: string, adminUserId: string, coins: number) => {
+  const addCoinsHandler = async (
+    userId: string,
+    adminUserId: string,
+    coins: number
+  ) => {
     const res = await addCoins({ userId, adminUserId, coins });
     responseToast(res, null, "");
   };
@@ -114,6 +124,7 @@ const Customers = () => {
           name: i.name,
           gender: i.gender,
           phone: i.phone,
+          referralCode: i.referalCode === null ? "NaN" : i.referalCode,
           addCoins: (
             <button onClick={() => openDialog(i._id)}>
               <BiCoinStack />
@@ -133,7 +144,7 @@ const Customers = () => {
     columns,
     rows,
     "dashboardProductBox",
-    "Customers",
+    "All Users",
     rows.length > 4
   )();
 
