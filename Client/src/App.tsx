@@ -28,6 +28,8 @@ const Users = lazy(() => import("./pages/admin/users"));
 const AdminHome = lazy(() => import("./pages/admin/adminHome"));
 // const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 const Withdraw = lazy(() => import("./pages/withdraw"));
+const About = lazy(() => import("./pages/about"));
+
 
 const App = () => {
   const { user, loading } = useSelector(
@@ -78,6 +80,7 @@ const App = () => {
             <Route path="/victory" element={<Victory />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/withdraw" element={<Withdraw />} />
+            <Route path="/about" element={<About />} />
           </Route>
 
           {/* Admin Routes */}

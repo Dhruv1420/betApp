@@ -10,6 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import BottomNav from "../components/Header";
+import Terms from "../components/Terms";
 
 const games = [
   {
@@ -87,6 +88,7 @@ function App() {
   return (
     <div>
       {/* Top Navigation */}
+      <Terms />
       <AppBar position="static" sx={{ backgroundColor: "#4e44ce" }}>
         <Toolbar>
           <IconButton
