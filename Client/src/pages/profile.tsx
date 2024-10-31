@@ -142,9 +142,10 @@ const Profile = () => {
         >
           <ListItemText primary="Withdrawal Record" />
         </ListItem>
-        <ListItem component="button" sx={{ cursor: "pointer" }}>
-          <ListItemText primary="Lottery Record" />
-        </ListItem>
+        <ListItem component="button" sx={{ cursor: "pointer" }} onClick={handleAboutUsClick}>
+      <ListItemText primary="About us" />
+    </ListItem>
+        
         <ListItem component="button"sx={{ cursor: 'pointer' }}>
           <ListItemText primary="Logout" onClick={logoutHandler} />
         </ListItem>

@@ -167,6 +167,7 @@ const tableData: TableData[] = [
   },
 ];
 
+
 interface ServerToClientEvents {
   betStarted: (data: { betId: string; message: string }) => void;
   betUpdate: (data: {
@@ -254,6 +255,9 @@ const App = () => {
   }, [connectSocket]);
 
   const startBetting = () => {
+    console.log("Start betting clicked");
+    console.log({ start, end, user });
+    
     if (!start) return toast.error("Bet not started yet");
     if (end) return toast.error("Bet ended");
     if (user) {
@@ -263,30 +267,36 @@ const App = () => {
         return toast.error("You are already active");
       if (user.status === "banned")
         return toast.error("You are banned, Can't start a bet");
-
+  
       if (socket && isConnected) {
+        console.log("Emitting activeUser event");
         socket.emit("activeUser", { userId: user?._id });
       } else {
         toast.error("Not connected to server");
       }
     }
   };
-
+  
   const stopBetting = () => {
+    console.log("Stop betting clicked");
+    console.log({ start, end, user });
+    
     if (!start) return toast.error("Bet not started yet");
     if (end) return toast.error("Bet ended");
     if (user) {
       if (user.status === "inactive")
         return toast.error("You are already inactive");
       if (user.status === "banned") return toast.error("You are banned");
-
+  
       if (socket && isConnected) {
+        console.log("Emitting inactiveUser event");
         socket.emit("inactiveUser", { userId: user?._id });
       } else {
         toast.error("Not connected to server");
       }
     }
   };
+  
 
   const logoutHandler = async () => {
     try {
