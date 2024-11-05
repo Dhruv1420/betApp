@@ -7,6 +7,8 @@ import { UpiId } from "../models/upiId.js";
 export const createPaymentIntent = TryCatch(async (req, res, next) => {
   const { amount } = req.body;
   if (!amount) return next(new ErrorHandler("Please enter amount", 400));
+  if (amount < 0)
+    return next(new ErrorHandler("Please enter valid amount", 400));
 
   const upiIds = await UpiId.find();
   const randomIndex = Math.floor(Math.random() * upiIds.length);
@@ -14,7 +16,7 @@ export const createPaymentIntent = TryCatch(async (req, res, next) => {
   const receiverName = "Victory Online";
   const currency = "INR";
 
-  const upiLink = `upi://pay?pa=${upiId}&pn=${receiverName}&am=${Number(
+  const upiLink = `upi://pay?pa=${upiId.upiId}&pn=${receiverName}&am=${Number(
     amount
   )}&cu=${currency}`;
 
@@ -23,6 +25,7 @@ export const createPaymentIntent = TryCatch(async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
+      upiId: upiId.upiId,
       amount,
       url,
     });
@@ -36,6 +39,9 @@ export const paymentDetails = TryCatch(async (req, res, next) => {
   if (!amount || !referenceNumber)
     return next(new ErrorHandler("Please enter all fields", 400));
 
+  if (amount < 0)
+    return next(new ErrorHandler("Please enter valid amount", 400));
+
   const user = await User.findById(id);
   if (!user) return next(new ErrorHandler("User Not Found", 404));
 
@@ -45,6 +51,32 @@ export const paymentDetails = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     message: "Payment details updated successfully",
+    user,
+  });
+});
+
+export const changePaymentStatus = TryCatch(async (req, res, next) => {
+  const { id, amount, referenceNumber, status } = req.body;
+  const user = await User.findById(id);
+  if (!user) return next(new ErrorHandler("User Not Found", 404));
+
+  const paymentRecord = user.paymentHistory.find(
+    (record) =>
+      record.amount === amount && record.referenceNumber === referenceNumber
+  );
+
+  if (!paymentRecord)
+    return next(new ErrorHandler("Payment Record Not Found", 404));
+
+  if (status === "completed")
+    return next(new ErrorHandler("Payment already verified", 400));
+
+  paymentRecord.status = status;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Payment status updated successfully",
     user,
   });
 });

@@ -29,6 +29,14 @@ export const paymentAPI = createApi({
       }),
       invalidatesTags: ["payment"],
     }),
+    statusChange: builder.mutation<PaymentResponse, PaymentDetailsRequest>({
+      query: (details) => ({
+        url: `statusChange?id=${details._id}`,
+        method: "POST",
+        body: details,
+      }),
+      invalidatesTags: ["payment"],
+    }),
     withdrawRequest: builder.mutation<PaymentResponse, WithdrawRequest>({
       query: (withdrawData) => ({
         url: "withdraw",
@@ -51,4 +59,5 @@ export const {
   useCreatePaymentIntentMutation,
   usePaymentDetailsMutation,
   useWithdrawRequestMutation,
+  useStatusChangeMutation,
 } = paymentAPI;

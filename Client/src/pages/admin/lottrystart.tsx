@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { useDispatch } from "react-redux";
 import { io, Socket } from "socket.io-client";
 import { server } from "../../contants/keys";
+import { betClose, betOpen } from "../../redux/reducer/betReducer";
 
 interface ServerToClientEvents {
   betStarted: (data: { betId: string; message: string }) => void;
@@ -37,6 +39,8 @@ const AdminBettingInterface = () => {
     Array<{ number: number; amount: string }>
   >([]);
 
+  const dispatch = useDispatch();
+
   const connectSocket = useCallback(() => {
     const newSocket = io(server, {
       path: "/socket.io/",
@@ -59,6 +63,7 @@ const AdminBettingInterface = () => {
 
     newSocket.on("betStarted", (data) => {
       setActiveBetId(data.betId);
+      dispatch(betOpen());
       toast.success(data.message);
     });
 
@@ -71,11 +76,13 @@ const AdminBettingInterface = () => {
 
     newSocket.on("betEnded", () => {
       setActiveBetId(null);
+      dispatch(betClose());
       toast.success("Bet ended");
     });
 
     newSocket.on("betStopped", (data) => {
       setActiveBetId(null);
+      dispatch(betClose());
       setGeneratedNumbers((prev) => [
         ...prev,
         { number: data.lastGeneratedNumber, amount: data.finalAmount },
@@ -97,6 +104,7 @@ const AdminBettingInterface = () => {
   const handleStartBet = () => {
     if (socket && isConnected) {
       socket.emit("startBet", { number, amount });
+      dispatch(betOpen());
     } else {
       toast.error("Not connected to server");
     }
@@ -105,6 +113,7 @@ const AdminBettingInterface = () => {
   const handleStopBet = () => {
     if (socket && isConnected && activeBetId) {
       socket.emit("stopBet", { betId: activeBetId });
+      dispatch(betClose());
     } else {
       toast.error("No active bet to stop");
     }

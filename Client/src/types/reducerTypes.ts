@@ -13,6 +13,7 @@ export interface betReducerInitialState {
       amount: number;
     }
   ];
+  betStart: boolean;
   number: number;
   amount: number;
   loading: boolean;

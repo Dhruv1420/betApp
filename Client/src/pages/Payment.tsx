@@ -7,13 +7,14 @@ import {
   usePaymentDetailsMutation,
 } from "../redux/api/paymnetAPI";
 import { RootState } from "../redux/store";
-import '../styles/Payment.scss'; // Import your SCSS file
+import "../styles/Payment.scss"; // Import your SCSS file
 
 const Payment = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const [amount, setAmount] = useState<number>(0);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [upiId, setUpiId] = useState<string>("");
   const [referenceNumber, setReferenceNumber] = useState<string>("");
 
   const [createPaymentIntent] = useCreatePaymentIntentMutation();
@@ -26,6 +27,7 @@ const Payment = () => {
       const response = await createPaymentIntent({ amount }).unwrap();
       if (response.url) {
         setQrCodeUrl(response.url);
+        setUpiId(response.upiId || "");
       } else {
         toast.error("QR code URL is undefined");
       }
@@ -53,7 +55,7 @@ const Payment = () => {
       navigate("/profile");
       toast.success("Balance will be updated shortly");
     } catch (error) {
-      toast.error("Payment creation error");
+      toast.error("Payment Creation Error");
       console.log(error);
     }
   };
@@ -71,11 +73,8 @@ const Payment = () => {
       <button onClick={handlePayment}>Create Payment</button>
       {qrCodeUrl && (
         <div className="qr-code-container">
-          <h2>Scan the QR Code</h2>
-          <img
-            src={qrCodeUrl}
-            alt="Payment QR Code"
-          />
+          <h2>Scan the QR Code or use the upiId: {upiId}</h2>
+          <img src={qrCodeUrl} alt="Payment QR Code" />
           <input
             type="text"
             value={referenceNumber}
@@ -86,9 +85,7 @@ const Payment = () => {
           <button onClick={submitHandler}>Pay</button>
         </div>
       )}
-      
     </div>
-    
   );
 };
 

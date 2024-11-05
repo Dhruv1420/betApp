@@ -10,6 +10,7 @@ const initialState: betReducerInitialState = {
       amount: 0,
     },
   ],
+  betStart: false,
   number: 1,
   amount: 0,
   loading: true,
@@ -19,6 +20,14 @@ export const betReducer = createSlice({
   name: "betReducer",
   initialState,
   reducers: {
+    betOpen: (state) => {
+      state.loading = false;
+      state.betStart = true;
+    },
+    betClose: (state) => {
+      state.loading = false;
+      state.betStart = false;
+    },
     addBet: (state, action: PayloadAction<Bet>) => {
       state.loading = false;
       state.bet.push(action.payload);
@@ -30,4 +39,4 @@ export const betReducer = createSlice({
   },
 });
 
-export const { addBet, clearBet } = betReducer.actions;
+export const { addBet, clearBet, betOpen, betClose } = betReducer.actions;

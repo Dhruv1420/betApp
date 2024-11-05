@@ -1,20 +1,38 @@
-import { ReactElement, useEffect, useState } from "react";
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material";
+import React, { ReactElement, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FaTrash } from "react-icons/fa";
 import { BiCoinStack } from "react-icons/bi";
+import { FaTrash } from "react-icons/fa";
+import { IoMdClose } from "react-icons/io";
+import { MdOutlinePayment } from "react-icons/md";
+import { TbStatusChange } from "react-icons/tb";
 import { useSelector } from "react-redux";
 import { Column } from "react-table";
 import TableHOC from "../../components/admin/TableHOC";
 import Loader from "../../components/Loader";
+import { useAddCoinsMutation } from "../../redux/api/adminAPI";
 import {
   useAllUsersQuery,
   useDeleteUserMutation,
 } from "../../redux/api/userAPI";
 import { RootState } from "../../redux/store";
-import { responseToast } from "../../utils/features";
-import { CustomError } from "../../types/apiTypes";
-import { useAddCoinsMutation } from "../../redux/api/adminAPI";
 import "../../styles/admin/users.scss";
+import { CustomError, MessageResponse } from "../../types/apiTypes";
+import { User } from "../../types/types";
+import { responseToast } from "../../utils/features";
+import { useStatusChangeMutation } from "../../redux/api/paymnetAPI";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 interface DataType {
   _id: string;
@@ -22,6 +40,7 @@ interface DataType {
   gender: string;
   phone: number;
   referralCode: string;
+  paymentHistory: ReactElement;
   addCoins: ReactElement;
   action: ReactElement;
 }
@@ -48,6 +67,10 @@ const columns: Column<DataType>[] = [
     accessor: "referralCode",
   },
   {
+    Header: "Payment History",
+    accessor: "paymentHistory",
+  },
+  {
     Header: "Add Coins",
     accessor: "addCoins",
   },
@@ -66,9 +89,12 @@ const Customers = () => {
   const [rows, setRows] = useState<DataType[]>([]);
   const [deleteUser] = useDeleteUserMutation();
   const [addCoins] = useAddCoinsMutation();
+  const [statusChange] = useStatusChangeMutation();
 
   // State to manage dialog visibility and coin input
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogPayment, setIsDialogPayment] = useState(false);
+  const [userr, setUserr] = useState<User>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [coinInput, setCoinInput] = useState<number>(0);
 
@@ -92,7 +118,16 @@ const Customers = () => {
   const openDialog = (userId: string) => {
     setSelectedUserId(userId);
     setIsDialogOpen(true);
+    setUserr(data?.users.find((i) => i._id === userId));
   };
+
+  const openDialogPayment = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsDialogPayment(true);
+    setUserr(data?.users.find((i) => i._id === userId));
+  };
+
+  const handleCloseDeposit = () => setIsDialogPayment(false);
 
   // Close dialog
   const closeDialog = () => {
@@ -111,6 +146,28 @@ const Customers = () => {
     }
   };
 
+  const changeStatus = async (
+    userId: string,
+    amount: number,
+    referenceNumber: string
+  ) => {
+    const res = await statusChange({
+      id: userId,
+      _id: user?._id as string,
+      amount,
+      referenceNumber,
+      status: "completed",
+    });
+
+    if (res && res.data) {
+      toast.success(res?.data.message || "status changed");
+    } else {
+      const error = res.error as FetchBaseQueryError;
+      const messageResponse = error.data as MessageResponse;
+      toast.error(messageResponse.message);
+    }
+  };
+
   if (isError) {
     const err = error as CustomError;
     toast.error(err.data.message);
@@ -125,6 +182,11 @@ const Customers = () => {
           gender: i.gender,
           phone: i.phone,
           referralCode: i.referalCode === null ? "NaN" : i.referalCode,
+          paymentHistory: (
+            <button onClick={() => openDialogPayment(i._id)}>
+              <MdOutlinePayment />
+            </button>
+          ),
           addCoins: (
             <button onClick={() => openDialog(i._id)}>
               <BiCoinStack />
@@ -157,6 +219,7 @@ const Customers = () => {
         <div className="dialogOverlay">
           <div className="dialogContent">
             <h2>Add Coins</h2>
+            <h6>User Coins: {userr?.coins.toFixed(2)}</h6>
             <input
               type="number"
               placeholder="Enter number of coins"
@@ -168,6 +231,92 @@ const Customers = () => {
           </div>
         </div>
       )}
+      <Dialog
+        open={isDialogPayment}
+        onClose={handleCloseDeposit}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
+          <DialogTitle>Deposit Record</DialogTitle>
+          <IconButton onClick={handleCloseDeposit} edge="end">
+            <IoMdClose />
+          </IconButton>
+        </Box>
+        <DialogContent dividers>
+          <List
+            sx={{
+              width: "100%",
+              maxWidth: 600,
+              bgcolor: "background.paper",
+              margin: "0 auto",
+            }}
+          >
+            {userr?.paymentHistory?.map((record, index) => (
+              <React.Fragment key={index}>
+                <ListItem divider>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: "bold", color: "text.primary" }}
+                      >
+                        Amount: ${record.amount}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        Reference Number: {record.referenceNumber}
+                      </Typography>
+                    }
+                  />
+
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      marginRight: 2,
+                      color:
+                        record.status === "completed"
+                          ? "success.main"
+                          : "error.main",
+                    }}
+                  >
+                    {record.status}
+                  </Typography>
+
+                  <IconButton
+                    color="primary"
+                    onClick={() =>
+                      changeStatus(
+                        userr._id,
+                        record.amount,
+                        record.referenceNumber
+                      )
+                    }
+                    aria-label="Change Status"
+                    sx={{
+                      "&:hover": {
+                        color: "primary.dark",
+                      },
+                    }}
+                  >
+                    <TbStatusChange size={24} />
+                  </IconButton>
+                </ListItem>
+                {index < userr.paymentHistory.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

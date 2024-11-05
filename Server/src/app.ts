@@ -79,6 +79,22 @@ app.get("/api/v1/bets", async (req, res) => {
 // Store active intervals
 const activeIntervals: { [key: string]: NodeJS.Timeout } = {};
 
+const initializeTable = () => {
+  const table = [];
+  for (let i = 2; i <= 19; i++) {
+    table.push({
+      number: i,
+      period: 0,
+      empty: 0,
+      amount: 0,
+      status: "inactive",
+    });
+  }
+  return table;
+};
+
+let tableData = initializeTable();
+
 const generateRandomNumber = (exclude: number): number => {
   let num: number;
   do {
@@ -104,12 +120,29 @@ const getIncreaseTimesProfit = (userNum: number): number => {
 };
 
 const startBetInterval = async (bet: any) => {
+  tableData = initializeTable();
   let currentAmount = bet.amount;
   const increasePercentage = getIncreasePercentage(bet.number);
 
   const intervalId = setInterval(async () => {
     const randomNum = generateRandomNumber(bet.number);
     currentAmount *= 1 + increasePercentage;
+
+    tableData = tableData.map((entry) => {
+      if (entry.number === randomNum) {
+        return {
+          ...entry,
+          period: entry.period + 1,
+          empty: 0,
+          amount: currentAmount,
+        };
+      } else {
+        return {
+          ...entry,
+          empty: entry.empty + 1,
+        };
+      }
+    });
 
     const users = await User.find({ status: "active" });
     users.forEach(async (user) => {
@@ -126,6 +159,7 @@ const startBetInterval = async (bet: any) => {
       betId: bet._id,
       generatedNumber: randomNum,
       updatedAmount: currentAmount,
+      tableData,
       timestamp: new Date(),
     });
 
@@ -133,8 +167,9 @@ const startBetInterval = async (bet: any) => {
       betId: bet._id,
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2),
+      tableData,
     });
-  }, 10*1000);
+  }, 10 * 1000);
 
   activeIntervals[bet._id.toString()] = intervalId;
 };
@@ -159,10 +194,11 @@ io.on("connection", (socket: Socket) => {
       else if (amount <= 0)
         socket.emit("error", { message: "Amount should be poitive" });
       else {
+        tableData = initializeTable();
         const bet = await Bet.create({ number, amount, status: "active" });
         startBetInterval(bet);
 
-        socket.emit("betStarted", {
+        io.emit("betStarted", {
           betId: bet._id,
           message: "Bet started successfully",
         });
@@ -175,7 +211,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("activeUser", async ({ userId }) => {
     try {
       await User.findByIdAndUpdate(userId, { status: "active" });
-      socket.emit("success", { message: "Status updated successfully" });
+      socket.emit("userActivated", { message: "You are now active" });
     } catch (error) {
       socket.emit("error", { message: "Failed to update user status" });
     }
@@ -184,7 +220,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("inactiveUser", async ({ userId }) => {
     try {
       await User.findByIdAndUpdate(userId, { status: "inactive" });
-      socket.emit("success", { message: "Status updated successfully" });
+      socket.emit("userInactive", { message: "You are now inactive" });
     } catch (error) {
       socket.emit("error", { message: "Failed to update user status" });
     }
@@ -208,10 +244,27 @@ io.on("connection", (socket: Socket) => {
             const finalAmount =
               lastGeneratedBet.updatedAmount * (1 + increasePercentage);
 
+            tableData = tableData.map((entry) => {
+              if (entry.number === bet.number) {
+                return {
+                  ...entry,
+                  period: entry.period + 1,
+                  empty: 0,
+                  amount: finalAmount,
+                };
+              } else {
+                return {
+                  ...entry,
+                  empty: entry.empty + 1,
+                };
+              }
+            });
+
             await GeneratedBet.create({
               betId: bet._id,
               generatedNumber: bet.number,
               updatedAmount: finalAmount,
+              tableData,
               timestamp: new Date(),
             });
 
@@ -231,6 +284,7 @@ io.on("connection", (socket: Socket) => {
               betId,
               lastGeneratedNumber: bet.number,
               finalAmount: finalAmount.toFixed(2),
+              tableData,
             });
           } else {
             socket.emit("error", { message: "No generated numbers found" });

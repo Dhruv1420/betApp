@@ -19,6 +19,7 @@ export type User = {
     {
       amount: number;
       referenceNumber: string;
+      status: string;
     }
   ];
 };
@@ -33,9 +34,9 @@ export interface Bet {
   _id: string;
   number: number;
   amount: number;
-  status: 'active' | 'completed';
+  status: "active" | "completed";
   generatedNumbers: GeneratedNumber[];
   createdAt: string;
   updatedAt: string;
-  time:string;
+  time: string;
 }

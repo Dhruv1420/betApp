@@ -1,265 +1,102 @@
-import "../styles/victory.scss";
-import { Link } from "react-router-dom";
-import BottomNav from "../components/Header";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
 import axios, { AxiosError } from "axios";
-import { server } from "../contants/keys";
-import { useDispatch } from "react-redux";
-import { userNotExist } from "../redux/reducer/userReducer";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useCallback, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { io } from "socket.io-client";
+import BottomNav from "../components/Header";
+import { server } from "../contants/keys";
+import { userNotExist } from "../redux/reducer/userReducer";
+import { RootState } from "../redux/store";
+import "../styles/victory.scss";
 
 interface TableData {
-  sum: number;
-  scheme: number;
-  period: string;
+  number: number;
+  period: number;
   empty: number;
   amount: string;
   status: string;
 }
 
-const tableData: TableData[] = [
-  {
-    sum: 19,
-    scheme: 1,
-    period: "20210504181",
-    empty: 44,
-    amount: "44",
-    status: "Activated",
-  },
-  {
-    sum: 18,
-    scheme: 1,
-    period: "20210504181",
-    empty: 7,
-    amount: "7",
-    status: "Activated",
-  },
-  {
-    sum: 17,
-    scheme: 2,
-    period: "20210504181",
-    empty: 56,
-    amount: "56",
-    status: "Activated",
-  },
-  {
-    sum: 16,
-    scheme: 2,
-    period: "20210504181",
-    empty: 9,
-    amount: "9",
-    status: "Activated",
-  },
-  {
-    sum: 15,
-    scheme: 3,
-    period: "20210504181",
-    empty: 14,
-    amount: "14",
-    status: "Activated",
-  },
-  {
-    sum: 14,
-    scheme: 3,
-    period: "20210504181",
-    empty: 4,
-    amount: "4",
-    status: "Activated",
-  },
-  {
-    sum: 13,
-    scheme: 4,
-    period: "20210504181",
-    empty: 17,
-    amount: "17",
-    status: "Activated",
-  },
-  {
-    sum: 12,
-    scheme: 4,
-    period: "20210504181",
-    empty: 3,
-    amount: "3",
-    status: "Activated",
-  },
-  {
-    sum: 11,
-    scheme: 5,
-    period: "20210504181",
-    empty: 11,
-    amount: "11",
-    status: "Activated",
-  },
-  {
-    sum: 10,
-    scheme: 4,
-    period: "20210504181",
-    empty: 12,
-    amount: "12",
-    status: "Activated",
-  },
-  {
-    sum: 9,
-    scheme: 4,
-    period: "20210504181",
-    empty: 1,
-    amount: "1",
-    status: "Activated",
-  },
-  {
-    sum: 8,
-    scheme: 3,
-    period: "20210504181",
-    empty: 23,
-    amount: "23",
-    status: "Activated",
-  },
-  {
-    sum: 7,
-    scheme: 3,
-    period: "20210504181",
-    empty: 20,
-    amount: "20",
-    status: "Activated",
-  },
-  {
-    sum: 6,
-    scheme: 2,
-    period: "20210504181",
-    empty: 6,
-    amount: "6",
-    status: "Activated",
-  },
-  {
-    sum: 5,
-    scheme: 2,
-    period: "20210504181",
-    empty: 0,
-    amount: "0",
-    status: "Activated",
-  },
-  {
-    sum: 4,
-    scheme: 1,
-    period: "20210504181",
-    empty: 16,
-    amount: "16",
-    status: "Activated",
-  },
-  {
-    sum: 3,
-    scheme: 1,
-    period: "20210504181",
-    empty: 69,
-    amount: "69",
-    status: "Activated",
-  },
-  {
-    sum: 2,
-    scheme: 1,
-    period: "20210504181",
-    empty: 6,
-    amount: "69",
-    status: "Activated",
-  },
-];
-
-
-interface ServerToClientEvents {
-  betStarted: (data: { betId: string; message: string }) => void;
-  betUpdate: (data: {
-    betId: string;
-    generatedNumber: number;
-    updatedAmount: string;
-  }) => void;
-  betEnded: (data: { betId: string }) => void;
-  betStopped: (data: {
-    betId: string;
-    lastGeneratedNumber: number;
-    finalAmount: string;
-  }) => void;
-  success: (data: { message: string }) => void;
-  error: (data: { message: string }) => void;
-}
-
-interface ClientToServerEvents {
-  startBet: (data: { number: number; amount: number }) => void;
-  stopBet: (data: { betId: string }) => void;
-  activeUser: (data: { userId: string }) => void;
-  inactiveUser: (data: { userId: string }) => void;
-}
+const socket = io(`${server}`);
 
 const App = () => {
-  const [socket, setSocket] = useState<Socket<
-    ServerToClientEvents,
-    ClientToServerEvents
-  > | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [tableData, setTableData] = useState<TableData[]>([]);
   const [start, setStart] = useState(false);
-  const [end, setEnd] = useState(false);
   const [bet, setBet] = useState<{ number: number; amount: string }>();
 
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const dispatch = useDispatch();
 
-  const connectSocket = useCallback(() => {
-    const newSocket = io(server, {
-      path: "/socket.io/",
-      transports: ["websocket"],
-    });
+  useEffect(() => {
+    const fetchTableData = async () => {
+      try {
+        const { data } = await axios.get(`${server}/api/v1/bet/victory`, {
+          withCredentials: true,
+        });
+        setTableData(data.data);
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to load table data");
+      }
+    };
 
-    newSocket.on("connect", () => {
-      setIsConnected(true);
-    });
+    fetchTableData();
 
-    newSocket.on("disconnect", () => {
-      setIsConnected(false);
-    });
-
-    newSocket.on("success", (data) => {
+    socket.on("userActivated", (data) => {
+      setStart(true);
+      updateUserStatus("active");
       toast.success(data.message);
     });
 
-    newSocket.on("error", (error) => {
+    socket.on("userInactive", (data) => {
+      setStart(false);
+      updateUserStatus("inactive");
+      toast.success(data.message);
+    });
+
+    socket.on("error", (error) => {
       toast.error(error.message);
     });
 
-    newSocket.on("betStarted", () => {
+    socket.on("betStarted", () => {
       setStart(true);
-      setEnd(false);
     });
 
-    newSocket.on("betUpdate", (data) => {
+    socket.on("newGeneratedNumber", (data) => {
+      setStart(true);
       setBet({ number: data.generatedNumber, amount: data.updatedAmount });
+      setTableData(data.tableData);
     });
 
-    newSocket.on("betStopped", (data) => {
-      setEnd(true);
+    socket.on("betStopped", (data) => {
       setStart(false);
       setBet({ number: data.lastGeneratedNumber, amount: data.finalAmount });
+      setTableData(data.tableData);
     });
 
-    setSocket(newSocket);
-
     return () => {
-      newSocket.disconnect();
+      socket.off("userActivated");
+      socket.off("userInactive");
+      socket.off("error");
+      socket.off("betStarted");
+      socket.off("newGeneratedNumber");
+      socket.off("betStopped");
     };
   }, []);
 
-  useEffect(() => {
-    connectSocket();
-  }, [connectSocket]);
+  const updateUserStatus = (status: string) => {
+    setTableData((prevData) =>
+      prevData?.map((row) => ({
+        ...row,
+        status: status,
+      }))
+    );
+  };
 
   const startBetting = () => {
-    console.log("Start betting clicked");
-    console.log({ start, end, user });
-    
     if (!start) return toast.error("Bet not started yet");
-    if (end) return toast.error("Bet ended");
     if (user) {
       if (Number(bet?.amount) > user.coins)
         return toast.error("Insufficient coins to start a bet");
@@ -267,36 +104,25 @@ const App = () => {
         return toast.error("You are already active");
       if (user.status === "banned")
         return toast.error("You are banned, Can't start a bet");
-  
-      if (socket && isConnected) {
-        console.log("Emitting activeUser event");
-        socket.emit("activeUser", { userId: user?._id });
-      } else {
-        toast.error("Not connected to server");
-      }
+
+      socket.emit("activeUser", { userId: user?._id }, () => {
+        updateUserStatus("active");
+      });
     }
   };
-  
+
   const stopBetting = () => {
-    console.log("Stop betting clicked");
-    console.log({ start, end, user });
-    
     if (!start) return toast.error("Bet not started yet");
-    if (end) return toast.error("Bet ended");
     if (user) {
       if (user.status === "inactive")
         return toast.error("You are already inactive");
       if (user.status === "banned") return toast.error("You are banned");
-  
-      if (socket && isConnected) {
-        console.log("Emitting inactiveUser event");
-        socket.emit("inactiveUser", { userId: user?._id });
-      } else {
-        toast.error("Not connected to server");
-      }
+
+      socket.emit("inactiveUser", { userId: user?._id }, () => {
+        updateUserStatus("inactive");
+      });
     }
   };
-  
 
   const logoutHandler = async () => {
     try {
@@ -309,8 +135,6 @@ const App = () => {
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(error?.response?.data?.message || "Something Went Wrong");
-      } else if (error instanceof Error) {
-        toast.error(error.message || "Something Went Wrong");
       } else {
         console.log("An unknown error occurred:", error);
         toast.error("An unknown error occurred");
@@ -327,7 +151,7 @@ const App = () => {
             Username: <span className="font-bold">{user?.name}</span>
           </p>
           <p>
-            Balance: <span className="font-bold">{user?.coins}</span>
+            Balance: <span className="font-bold">{user?.coins.toFixed(2)}</span>
           </p>
         </div>
         <p>
@@ -352,8 +176,7 @@ const App = () => {
         <table>
           <thead>
             <tr>
-              <th>Sum</th>
-              <th>Scheme</th>
+              <th>Number</th>
               <th>Period</th>
               <th>Empty</th>
               <th>Amount</th>
@@ -361,13 +184,12 @@ const App = () => {
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row, index) => (
+            {tableData?.map((row, index) => (
               <tr key={index}>
-                <td>{row.sum}</td>
-                <td>{row.scheme}</td>
+                <td>{row.number}</td>
                 <td>{row.period}</td>
                 <td>{row.empty}</td>
-                <td>{row.amount}</td>
+                <td>{Number(row.amount).toFixed(2)}</td>
                 <td>{user?.status}</td>
               </tr>
             ))}

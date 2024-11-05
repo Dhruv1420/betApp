@@ -84,7 +84,10 @@ const Profile = () => {
           </span>
         </Typography>
         <Typography variant="h5" color="Black" mt={1}>
-          Balance: <span style={{ color: "Red", fontWeight:"bolder" }}>{user?.coins} coins</span>
+          Balance:{" "}
+          <span style={{ color: "Red", fontWeight: "bolder" }}>
+            {user?.coins.toFixed(2)} coins
+          </span>
         </Typography>
         <Box
           display="flex"
@@ -142,11 +145,15 @@ const Profile = () => {
         >
           <ListItemText primary="Withdrawal Record" />
         </ListItem>
-        <ListItem component="button" sx={{ cursor: "pointer" }} onClick={handleAboutUsClick}>
-      <ListItemText primary="About us" />
-    </ListItem>
-        
-        <ListItem component="button"sx={{ cursor: 'pointer' }}>
+        <ListItem
+          component="button"
+          sx={{ cursor: "pointer" }}
+          onClick={handleAboutUsClick}
+        >
+          <ListItemText primary="About us" />
+        </ListItem>
+
+        <ListItem component="button" sx={{ cursor: "pointer" }}>
           <ListItemText primary="Logout" onClick={logoutHandler} />
         </ListItem>
       </List>

@@ -41,7 +41,6 @@ const getCurrentTimestamp = (): string => {
   return `${now.toISOString()}`; // Formats timestamp as ISO string
 };
 
-
 export const getNumber = TryCatch(
   async (
     req: Request<{}, {}, BetRequestBody>,
@@ -51,7 +50,9 @@ export const getNumber = TryCatch(
     const { number, amount: initialAmount } = req.body;
 
     if (typeof number !== "number" || typeof initialAmount !== "number") {
-      return next(new ErrorHandler("Please provide both number and amount", 400));
+      return next(
+        new ErrorHandler("Please provide both number and amount", 400)
+      );
     }
 
     // Create the bet in the database
@@ -91,11 +92,13 @@ export const getNumber = TryCatch(
 
       // Send the response back to the client
       if (res.writable) {
-        res.write(JSON.stringify({
-          success: true,
-          generatedNumber: randomNum,
-          updatedAmount: amount.toFixed(2),
-        }) + "\n");
+        res.write(
+          JSON.stringify({
+            success: true,
+            generatedNumber: randomNum,
+            updatedAmount: amount.toFixed(2),
+          }) + "\n"
+        );
       }
     }, 10000);
 
@@ -187,3 +190,16 @@ export const stopNumberGeneration: ControllerType<{ betId: string }> = TryCatch(
     });
   }
 );
+
+export const tableData = TryCatch(async (req, res, next) => {
+  const data = await GeneratedBet.findOne().sort({ timestamp: -1 });
+
+  if (!data) {
+    return next(new ErrorHandler("No table data found", 404));
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: data.tableData,
+  });
+});

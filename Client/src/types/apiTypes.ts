@@ -21,6 +21,7 @@ export type UserResponse = {
 export type MessageResponse = {
   success: boolean;
   message: string;
+  user?: User;
 };
 
 export type DeleteUserRequest = {
@@ -34,12 +35,15 @@ export interface PaymentResponse {
   url?: string;
   message?: string;
   user?: User;
+  upiId?: string;
 }
 
 export interface PaymentDetailsRequest {
   _id: string;
+  id?: string;
   amount: number;
   referenceNumber: string;
+  status?: string;
 }
 
 export interface WithdrawRequest {

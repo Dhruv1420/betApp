@@ -55,6 +55,13 @@ export const userAPI = createApi({
       }),
       providesTags: ["users"],
     }),
+    getUser: builder.query<MessageResponse, string>({
+      query: (id) => ({
+        url: `${id}`,
+        credentials: "include",
+      }),
+      providesTags: ["users"],
+    }),
   }),
 });
 
@@ -70,4 +77,5 @@ export const {
   useLoginMutation,
   useDeleteUserMutation,
   useAllUsersQuery,
+  useGetUserQuery,
 } = userAPI;
