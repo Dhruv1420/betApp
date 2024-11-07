@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -168,23 +169,17 @@ const App = () => {
 
           <h1 className="text-3xl text-white lg:flex hidden">Victory Online</h1>
 
-          <Link
-            to={"/login"}
-            onClick={logoutHandler}
-            
-          >
+          <Link to={"/login"} onClick={logoutHandler}>
             <button className="bg-red-500 px-8 translate-y-4 py-2 text-white rounded-lg shadow">
               Exit
             </button>
-            
           </Link>
         </div>
-        
       </div>
       <p className="text-center bg-[#4e44ce] text-white py-4">
-          Bets are scheduled to be placed every 5 minutes. Countdown to the next
-          placement!
-        </p>
+        Bets are scheduled to be placed every 5 minutes. Countdown to the next
+        placement!
+      </p>
       {/* Tab Section */}
       <div className="tabs">
         {/* <button className="tab active">Plan</button>

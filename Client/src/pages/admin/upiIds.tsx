@@ -1,15 +1,19 @@
-/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ReactElement, useEffect, useState } from "react";
-import { useAddUpiMutation, useDltUpiMutation, useGetUpiQuery } from "../../redux/api/upiAPI";
+import toast from "react-hot-toast";
+import { FaTrash } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
-import { responseToast } from "../../utils/features";
 import { Column } from "react-table";
 import TableHOC from "../../components/admin/TableHOC";
-import toast from "react-hot-toast";
-import { CustomError } from "../../types/apiTypes";
 import Loader from "../../components/Loader";
-import { FaTrash } from "react-icons/fa";
+import {
+  useAddUpiMutation,
+  useDltUpiMutation,
+  useGetUpiQuery,
+} from "../../redux/api/upiAPI";
+import { RootState } from "../../redux/store";
+import { CustomError } from "../../types/apiTypes";
+import { responseToast } from "../../utils/features";
 
 interface DataType {
   _id: string;
@@ -34,7 +38,9 @@ const columns: Column<DataType>[] = [
 
 const UpiIds = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
-  const { isLoading, data, isError, error } = useGetUpiQuery(user?._id as string);
+  const { isLoading, data, isError, error } = useGetUpiQuery(
+    user?._id as string
+  );
 
   if (isError) {
     const err = error as CustomError;
@@ -54,7 +60,8 @@ const UpiIds = () => {
   };
 
   const deleteHandler = async (upiId: string) => {
-    if (data?.upiIds?.length === 1) return toast.error("At least one UPI ID is required");
+    if (data?.upiIds?.length === 1)
+      return toast.error("At least one UPI ID is required");
     const res = await dltUpi({ upiId, _id: user?._id as string });
     responseToast(res, null, "");
   };
