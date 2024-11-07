@@ -8,7 +8,7 @@ const WagerDetails: React.FC = () => {
     const { user } = useSelector((state: RootState) => state.userReducer);
 
   const details = [
-    { label: 'No.', value: user?._id},
+    { label: 'User ID:', value: user?._id},
     { label: 'User Name:', value: user?.name },
     // { label: 'Period:', value: '20210504115' },
     { label: 'Play Type:', value: 'Credit' },

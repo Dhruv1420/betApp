@@ -284,6 +284,7 @@ io.on("connection", (socket: Socket) => {
               betId,
               lastGeneratedNumber: bet.number,
               finalAmount: finalAmount.toFixed(2),
+              profit: finalAmount * getIncreaseTimesProfit(bet.number),
               tableData,
             });
           } else {

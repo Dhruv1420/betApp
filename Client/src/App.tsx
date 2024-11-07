@@ -17,7 +17,6 @@ import UserComponent from "./pages/UserComponent";
 import WagerDetails from "./pages/WagerDetails";
 
 const Home = lazy(() => import("./pages/Home"));
-const Lottery = lazy(() => import("./pages/lottery"));
 // const LotteryResult = lazy(() => import("./pages/lottryresult"));
 const Profile = lazy(() => import("./pages/profile"));
 const Login = lazy(() => import("./pages/login"));
@@ -31,7 +30,6 @@ const AdminHome = lazy(() => import("./pages/admin/adminHome"));
 // const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 const Withdraw = lazy(() => import("./pages/withdraw"));
 const About = lazy(() => import("./pages/about"));
-
 
 const App = () => {
   const { user, loading } = useSelector(
