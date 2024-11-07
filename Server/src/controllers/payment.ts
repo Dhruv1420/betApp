@@ -68,7 +68,7 @@ export const changePaymentStatus = TryCatch(async (req, res, next) => {
   if (!paymentRecord)
     return next(new ErrorHandler("Payment Record Not Found", 404));
 
-  if (status === "completed")
+  if (paymentRecord.status === "completed")
     return next(new ErrorHandler("Payment already verified", 400));
 
   paymentRecord.status = status;
@@ -83,18 +83,67 @@ export const changePaymentStatus = TryCatch(async (req, res, next) => {
 
 export const withdrawRequest = TryCatch(async (req, res, next) => {
   const { id } = req.query;
-  const { coins } = req.body;
+  const { coins, accNo, ifsc, contact, bankName, receiverName } = req.body;
 
   const user = await User.findById(id);
   if (!user) return next(new ErrorHandler("User Not Found", 404));
-  if (!coins) return next(new ErrorHandler("Please enter coins", 400));
 
-  user.withdrawHistory.push({ coins, status: "pending" });
+  if (!coins || !accNo || !ifsc || !contact || !bankName || !receiverName)
+    return next(new ErrorHandler("Please enter all fields", 400));
+
+  if (coins <= 100) return next(new ErrorHandler("Insufficient coins", 400));
+
+  user.withdrawHistory.push({
+    accNo,
+    ifsc,
+    contact,
+    bankName,
+    receiverName,
+    coins,
+  });
   await user.save();
 
   return res.status(200).json({
     success: true,
     message: "Withdraw request sent successfully",
+    user,
+  });
+});
+
+export const changeWithdrawStatus = TryCatch(async (req, res, next) => {
+  const { id, coins, accNo, ifsc, contact, bankName, receiverName, status } =
+    req.body;
+  const user = await User.findById(id);
+  if (!user) return next(new ErrorHandler("User Not Found", 404));
+
+  const withdrawRecord = user.withdrawHistory.find(
+    (record) =>
+      record.coins === coins &&
+      record.accNo === accNo &&
+      record.ifsc === ifsc &&
+      record.contact === contact &&
+      record.receiverName === receiverName &&
+      record.bankName === bankName
+  );
+
+  if (!withdrawRecord)
+    return next(new ErrorHandler("Payment Record Not Found", 404));
+
+  if (withdrawRecord.status === "approved")
+    return next(new ErrorHandler("Withdraw already verified", 400));
+
+  withdrawRecord.status = status;
+  if (status === "approved") {
+    if (user.coins < coins) {
+      return next(new ErrorHandler("Insufficient coins", 400));
+    }
+    user.coins -= coins;
+  }
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Withdraw status updated successfully",
     user,
   });
 });

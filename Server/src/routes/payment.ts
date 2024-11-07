@@ -1,6 +1,7 @@
 import express from "express";
 import {
   changePaymentStatus,
+  changeWithdrawStatus,
   createPaymentIntent,
   paymentDetails,
   withdrawRequest,
@@ -14,6 +15,8 @@ app.post("/create", createPaymentIntent);
 app.post("/paymentdetails", paymentDetails);
 
 app.post("/statusChange", adminOnly, changePaymentStatus);
+
+app.post("/withdrawstatus", adminOnly, changeWithdrawStatus);
 
 app.post("/withdraw", withdrawRequest);
 

@@ -48,7 +48,14 @@ export interface PaymentDetailsRequest {
 
 export interface WithdrawRequest {
   _id: string;
+  id?: string;
   coins: number;
+  accNo: string;
+  ifsc: string;
+  bankName: string;
+  receiverName: string;
+  contact: number;
+  status?: string;
 }
 
 export type BetResponse = {

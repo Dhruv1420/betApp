@@ -13,6 +13,11 @@ export type User = {
     {
       coins: number;
       status: string;
+      accNo: string;
+      ifsc: string;
+      bankName: string;
+      receiverName: string;
+      contact: number;
     }
   ];
   paymentHistory: [

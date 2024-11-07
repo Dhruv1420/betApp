@@ -105,7 +105,12 @@ const Profile = () => {
           >
             Deposit
           </Button>
-          <Button variant="contained" color="error" fullWidth>
+          <Button
+            variant="contained"
+            color="error"
+            fullWidth
+            onClick={() => navigate("/withdraw")}
+          >
             Withdraw
           </Button>
         </Box>

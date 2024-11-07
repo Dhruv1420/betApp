@@ -31,7 +31,10 @@ import "../../styles/admin/users.scss";
 import { CustomError, MessageResponse } from "../../types/apiTypes";
 import { User } from "../../types/types";
 import { responseToast } from "../../utils/features";
-import { useStatusChangeMutation } from "../../redux/api/paymnetAPI";
+import {
+  useStatusChangeMutation,
+  useStatusChangeWithdrawMutation,
+} from "../../redux/api/paymnetAPI";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 interface DataType {
@@ -41,6 +44,7 @@ interface DataType {
   phone: number;
   referralCode: string;
   paymentHistory: ReactElement;
+  withdrawHistory: ReactElement;
   addCoins: ReactElement;
   action: ReactElement;
 }
@@ -71,6 +75,10 @@ const columns: Column<DataType>[] = [
     accessor: "paymentHistory",
   },
   {
+    Header: "Withdraw History",
+    accessor: "withdrawHistory",
+  },
+  {
     Header: "Add Coins",
     accessor: "addCoins",
   },
@@ -90,10 +98,12 @@ const Customers = () => {
   const [deleteUser] = useDeleteUserMutation();
   const [addCoins] = useAddCoinsMutation();
   const [statusChange] = useStatusChangeMutation();
+  const [withdrawStatus] = useStatusChangeWithdrawMutation();
 
   // State to manage dialog visibility and coin input
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogPayment, setIsDialogPayment] = useState(false);
+  const [isDialogWithdraw, setIsDialogWithdraw] = useState(false);
   const [userr, setUserr] = useState<User>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [coinInput, setCoinInput] = useState<number>(0);
@@ -121,13 +131,17 @@ const Customers = () => {
     setUserr(data?.users.find((i) => i._id === userId));
   };
 
-  const openDialogPayment = (userId: string) => {
+  const openDialogPayment = (userId: string, history: string) => {
     setSelectedUserId(userId);
-    setIsDialogPayment(true);
+    if (history === "deposit") setIsDialogPayment(true);
+    if (history === "withdraw") setIsDialogWithdraw(true);
     setUserr(data?.users.find((i) => i._id === userId));
   };
 
-  const handleCloseDeposit = () => setIsDialogPayment(false);
+  const handleCloseDeposit = () => {
+    setIsDialogPayment(false);
+    setIsDialogWithdraw(false);
+  };
 
   // Close dialog
   const closeDialog = () => {
@@ -168,6 +182,37 @@ const Customers = () => {
     }
   };
 
+  const changeStatusWithdraw = async (
+    userId: string,
+    coins: number,
+    accNo: string,
+    ifsc: string,
+    bankName: string,
+    receiverName: string,
+    contact: number,
+    status: string
+  ) => {
+    const res = await withdrawStatus({
+      id: userId,
+      _id: user?._id as string,
+      coins,
+      accNo,
+      ifsc,
+      bankName,
+      receiverName,
+      contact,
+      status: status === "approved" ? "approved" : "not approved",
+    });
+
+    if (res && res.data) {
+      toast.success(res?.data.message || "Withdraw status changed");
+    } else {
+      const error = res.error as FetchBaseQueryError;
+      const messageResponse = error.data as MessageResponse;
+      toast.error(messageResponse.message);
+    }
+  };
+
   if (isError) {
     const err = error as CustomError;
     toast.error(err.data.message);
@@ -181,9 +226,17 @@ const Customers = () => {
           name: i.name,
           gender: i.gender,
           phone: i.phone,
-          referralCode: i.referalCode === null ? "NaN" : i.referalCode,
+          referralCode:
+            i.referalCode === "" || i.referalCode === null
+              ? "NaN"
+              : i.referalCode,
           paymentHistory: (
-            <button onClick={() => openDialogPayment(i._id)}>
+            <button onClick={() => openDialogPayment(i._id, "deposit")}>
+              <MdOutlinePayment />
+            </button>
+          ),
+          withdrawHistory: (
+            <button onClick={() => openDialogPayment(i._id, "withdraw")}>
               <MdOutlinePayment />
             </button>
           ),
@@ -231,6 +284,7 @@ const Customers = () => {
           </div>
         </div>
       )}
+
       <Dialog
         open={isDialogPayment}
         onClose={handleCloseDeposit}
@@ -312,6 +366,148 @@ const Customers = () => {
                   </IconButton>
                 </ListItem>
                 {index < userr.paymentHistory.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDialogWithdraw}
+        onClose={handleCloseDeposit}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
+          <DialogTitle>Withdraw Record</DialogTitle>
+          <IconButton onClick={handleCloseDeposit} edge="end">
+            <IoMdClose />
+          </IconButton>
+        </Box>
+        <DialogContent dividers>
+          <List
+            sx={{
+              width: "100%",
+              maxWidth: 600,
+              bgcolor: "background.paper",
+              margin: "0 auto",
+            }}
+          >
+            {userr?.withdrawHistory?.map((record, index) => (
+              <React.Fragment key={index}>
+                <ListItem divider>
+                  <ListItemText
+                    primary={
+                      <>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: "bold", color: "text.primary" }}
+                        >
+                          Account Number: {record.accNo}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          IFSC Code: {record.ifsc}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          Bank Name: {record.bankName}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          Receiver's Name: {record.receiverName}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          Contact: {record.contact}
+                        </Typography>
+                      </>
+                    }
+                    secondary={
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        Coins: {record.coins}
+                      </Typography>
+                    }
+                  />
+
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      marginRight: 2,
+                      color:
+                        record.status === "approved"
+                          ? "success.main"
+                          : "error.main",
+                    }}
+                  >
+                    {record.status}
+                  </Typography>
+
+                  <IconButton
+                    color="primary"
+                    onClick={() =>
+                      changeStatusWithdraw(
+                        userr._id,
+                        record.coins,
+                        record.accNo,
+                        record.ifsc,
+                        record.bankName,
+                        record.receiverName,
+                        record.contact,
+                        "approved"
+                      )
+                    }
+                    aria-label="Change Status"
+                    sx={{
+                      "&:hover": {
+                        color: "primary.dark",
+                      },
+                    }}
+                  >
+                    Approved
+                  </IconButton>
+
+                  <IconButton
+                    color="primary"
+                    onClick={() =>
+                      changeStatusWithdraw(
+                        userr._id,
+                        record.coins,
+                        record.accNo,
+                        record.ifsc,
+                        record.bankName,
+                        record.receiverName,
+                        record.contact,
+                        "not approved"
+                      )
+                    }
+                    aria-label="Change Status"
+                    sx={{
+                      "&:hover": {
+                        color: "primary.dark",
+                      },
+                    }}
+                  >
+                    Not Approved
+                  </IconButton>
+                </ListItem>
+                {index < userr.withdrawHistory.length - 1 && <Divider />}
               </React.Fragment>
             ))}
           </List>

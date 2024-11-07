@@ -48,14 +48,35 @@ const schema = new mongoose.Schema(
     },
     withdrawHistory: [
       {
+        accNo: {
+          type: String,
+          required: true,
+        },
+        ifsc: {
+          type: String,
+          required: true,
+        },
+        bankName: {
+          type: String,
+          required: true,
+        },
+        receiverName: {
+          type: String,
+          required: true,
+        },
+        contact: {
+          type: Number,
+          required: true,
+        },
         coins: {
           type: Number,
-          default: null,
+          required: true,
+          min: 100,
         },
         status: {
           type: String,
           enum: ["approved", "not approved", "pending"],
-          default: "not approved",
+          default: "pending",
         },
       },
     ],
