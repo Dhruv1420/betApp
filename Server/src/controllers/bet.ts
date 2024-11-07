@@ -201,5 +201,6 @@ export const tableData = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     data: data.tableData,
+    betStatus: data.betStatus,
   });
 });

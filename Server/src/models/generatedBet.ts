@@ -5,6 +5,11 @@ const generatedBetSchema = new mongoose.Schema({
   betId: { type: mongoose.Schema.Types.ObjectId, ref: "Bet" },
   generatedNumber: { type: Number, required: true },
   updatedAmount: { type: Number, required: true },
+  betStatus: {
+    type: String,
+    enum: ["active", "inactive"],
+    default: "inactive",
+  },
   tableData: [
     {
       number: { type: Number, required: true },
