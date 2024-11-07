@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // import BettingComponent from "./pages/BettingComponent";
 import AdminComponent from "./pages/admin/AdminComponent";
 import UserComponent from "./pages/UserComponent";
+import WagerDetails from "./pages/WagerDetails";
 
 const Home = lazy(() => import("./pages/Home"));
 const Lottery = lazy(() => import("./pages/lottery"));
@@ -75,7 +76,7 @@ const App = () => {
             element={<ProtectedRoute isAuthenticated={user ? true : false} />}
           >
             <Route path="/" element={<Home />} />
-            <Route path="/lottery" element={<Lottery />} />
+            <Route path="/lottery" element={<WagerDetails />} />
             <Route path="/lottryresult" element={<UserComponent />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/victory" element={<Victory />} />
