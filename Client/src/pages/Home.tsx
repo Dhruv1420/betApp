@@ -2,12 +2,11 @@
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import {
   AppBar,
-  Card,
   CardContent,
   Grid,
   IconButton,
   Toolbar,
-  Typography,
+  Typography
 } from "@mui/material";
 import BottomNav from "../components/Header";
 import Terms from "../components/Terms";

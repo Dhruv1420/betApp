@@ -185,6 +185,9 @@ const App = () => {
           Bets are scheduled to be placed every 5 minutes. Countdown to the next
           placement!
         </p>
+        <p className="text-center bg-[#4e44ce] text-white py-4">
+        Please reload the page to see changes in your balance
+        </p>
       {/* Tab Section */}
       <div className="tabs">
         {/* <button className="tab active">Plan</button>
