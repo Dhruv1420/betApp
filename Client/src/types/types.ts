@@ -29,6 +29,11 @@ export type User = {
   ];
 };
 
+export interface updateUserReal {
+  status: string;
+  coins?: number;
+}
+
 export interface GeneratedNumber {
   generatedNumber: number;
   updatedAmount: number;

@@ -157,6 +157,7 @@ const startBetInterval = async (bet: any) => {
 
     await GeneratedBet.create({
       betId: bet._id,
+      betStatus: "active",
       generatedNumber: randomNum,
       updatedAmount: currentAmount,
       tableData,
@@ -165,6 +166,7 @@ const startBetInterval = async (bet: any) => {
 
     io.emit("newGeneratedNumber", {
       betId: bet._id,
+      betStatus: "active",
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2),
       tableData,
@@ -200,6 +202,7 @@ io.on("connection", (socket: Socket) => {
 
         io.emit("betStarted", {
           betId: bet._id,
+          betStatus: "active",
           message: "Bet started successfully",
         });
       }
@@ -262,6 +265,7 @@ io.on("connection", (socket: Socket) => {
 
             await GeneratedBet.create({
               betId: bet._id,
+              betStatus: "inactive",
               generatedNumber: bet.number,
               updatedAmount: finalAmount,
               tableData,
@@ -282,6 +286,7 @@ io.on("connection", (socket: Socket) => {
 
             io.emit("betStopped", {
               betId,
+              betStatus: "inactive",
               lastGeneratedNumber: bet.number,
               finalAmount: finalAmount.toFixed(2),
               profit: finalAmount * getIncreaseTimesProfit(bet.number),

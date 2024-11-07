@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { io } from "socket.io-client";
 import BottomNav from "../components/Header";
 import { server } from "../contants/keys";
-import { userNotExist } from "../redux/reducer/userReducer";
+import { updateUser, userNotExist } from "../redux/reducer/userReducer";
 import { RootState } from "../redux/store";
 import "../styles/victory.scss";
 
@@ -21,11 +21,11 @@ interface TableData {
 const socket = io(`${server}`);
 
 const App = () => {
-  const [tableData, setTableData] = useState<TableData[]>([]);
-  const [start, setStart] = useState(false);
-  const [bet, setBet] = useState<{ number: number; amount: string }>();
-
   const { user } = useSelector((state: RootState) => state.userReducer);
+
+  const [tableData, setTableData] = useState<TableData[]>([]);
+  const [betStatuss, setBetStatuss] = useState<string>("inactive");
+  const [bet, setBet] = useState<{ number: number; amount: string }>();
 
   const dispatch = useDispatch();
 
@@ -36,6 +36,7 @@ const App = () => {
           withCredentials: true,
         });
         setTableData(data.data);
+        setBetStatuss(data.betStatus);
       } catch (error) {
         console.log(error);
         toast.error("Failed to load table data");
@@ -45,13 +46,11 @@ const App = () => {
     fetchTableData();
 
     socket.on("userActivated", (data) => {
-      setStart(true);
       updateUserStatus("active");
       toast.success(data.message);
     });
 
     socket.on("userInactive", (data) => {
-      setStart(false);
       updateUserStatus("inactive");
       toast.success(data.message);
     });
@@ -60,20 +59,24 @@ const App = () => {
       toast.error(error.message);
     });
 
-    socket.on("betStarted", () => {
-      setStart(true);
+    socket.on("betStarted", (data) => {
+      setBetStatuss(data.betStatus);
     });
 
     socket.on("newGeneratedNumber", (data) => {
-      setStart(true);
       setBet({ number: data.generatedNumber, amount: data.updatedAmount });
+      if (user && user.status === "active") {
+        const newBalance = user.coins - Number(data.updatedAmount);
+        dispatch(updateUser({ status: "active", coins: newBalance }));
+      }
+      setBetStatuss(data.betStatus);
       setTableData(data.tableData);
     });
 
     socket.on("betStopped", (data) => {
-      setStart(false);
       setBet({ number: data.lastGeneratedNumber, amount: data.finalAmount });
       setTableData(data.tableData);
+      setBetStatuss(data.betStatus);
     });
 
     return () => {
@@ -86,17 +89,23 @@ const App = () => {
     };
   }, []);
 
-  const updateUserStatus = (status: string) => {
+  const updateUserStatus = (status: string, coins?: number) => {
     setTableData((prevData) =>
       prevData?.map((row) => ({
         ...row,
         status: status,
       }))
     );
+
+    if (coins) {
+      dispatch(updateUser({ status, coins }));
+    } else {
+      dispatch(updateUser({ status }));
+    }
   };
 
   const startBetting = () => {
-    if (!start) return toast.error("Bet not started yet");
+    if (betStatuss === "inactive") return toast.error("Bet not started yet");
     if (user) {
       if (Number(bet?.amount) > user.coins)
         return toast.error("Insufficient coins to start a bet");
@@ -112,7 +121,7 @@ const App = () => {
   };
 
   const stopBetting = () => {
-    if (!start) return toast.error("Bet not started yet");
+    if (betStatuss === "inactive") return toast.error("Bet not started yet");
     if (user) {
       if (user.status === "inactive")
         return toast.error("You are already inactive");
