@@ -459,8 +459,8 @@ const Customers = () => {
                     {record.status}
                   </Typography>
 
-                  <IconButton
-                    color="primary"
+                  <button
+                  className=" rounded-lg bg-[#4e44ce] px-2 mx-2 py-1 text-white"
                     onClick={() =>
                       changeStatusWithdraw(
                         userr._id,
@@ -474,18 +474,14 @@ const Customers = () => {
                       )
                     }
                     aria-label="Change Status"
-                    sx={{
-                      "&:hover": {
-                        color: "primary.dark",
-                      },
-                    }}
+                    
                   >
                     Approved
-                  </IconButton>
+                  </button>
 
-                  <IconButton
-                    color="primary"
-                    onClick={() =>
+                  <button
+                  className=" rounded-lg bg-red-500 w-44 mx-2 px-2 py-1 text-white"
+                  onClick={() =>
                       changeStatusWithdraw(
                         userr._id,
                         record.coins,
@@ -498,14 +494,10 @@ const Customers = () => {
                       )
                     }
                     aria-label="Change Status"
-                    sx={{
-                      "&:hover": {
-                        color: "primary.dark",
-                      },
-                    }}
+                    
                   >
                     Not Approved
-                  </IconButton>
+                  </button>
                 </ListItem>
                 {index < userr.withdrawHistory.length - 1 && <Divider />}
               </React.Fragment>

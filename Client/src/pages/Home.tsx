@@ -109,12 +109,7 @@ function App() {
       </AppBar>
       {/* Banner Section */}
       <div
-        style={{
-          backgroundColor: "#4e44ce",
-          padding: "20px",
-          color: "white",
-          textAlign: "center",
-        }}
+        className="p-8 bg-[#4e44ce] flex justify-center items-center"
       >
         <a href="/victory" target="_blank" rel="noopener noreferrer">
           <img
@@ -133,7 +128,8 @@ function App() {
         <Grid container spacing={2}>
           {games.map((game, index) => (
             <Grid item xs={6} sm={4} md={3} key={index}>
-              <Card
+              <div
+              className="flex items-center justify-center gap-4 shadow-lg rounded-xl hover:scale-95 transotion-all duration-300"
                 onClick={() => handleCardClick(game.url)}
                 style={{ cursor: "pointer" }}
               >
@@ -150,7 +146,7 @@ function App() {
                   />
                   <Typography variant="h6">{game.name}</Typography>
                 </CardContent>
-              </Card>
+              </div>
             </Grid>
           ))}
         </Grid>

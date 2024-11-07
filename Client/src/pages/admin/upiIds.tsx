@@ -1,11 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Button } from "@mui/material";
 import { ReactElement, useEffect, useState } from "react";
-import {
-  useAddUpiMutation,
-  useDltUpiMutation,
-  useGetUpiQuery,
-} from "../../redux/api/upiAPI";
+import { useAddUpiMutation, useDltUpiMutation, useGetUpiQuery } from "../../redux/api/upiAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { responseToast } from "../../utils/features";
@@ -39,9 +34,7 @@ const columns: Column<DataType>[] = [
 
 const UpiIds = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
-  const { isLoading, data, isError, error } = useGetUpiQuery(
-    user?._id as string
-  );
+  const { isLoading, data, isError, error } = useGetUpiQuery(user?._id as string);
 
   if (isError) {
     const err = error as CustomError;
@@ -61,8 +54,7 @@ const UpiIds = () => {
   };
 
   const deleteHandler = async (upiId: string) => {
-    if (data?.upiIds?.length === 1)
-      return toast.error("At least one UPI ID is required");
+    if (data?.upiIds?.length === 1) return toast.error("At least one UPI ID is required");
     const res = await dltUpi({ upiId, _id: user?._id as string });
     responseToast(res, null, "");
   };
@@ -75,7 +67,10 @@ const UpiIds = () => {
           _id: i._id,
           upiId: i.upiId,
           action: (
-            <button onClick={() => deleteHandler(i.upiId)}>
+            <button
+              onClick={() => deleteHandler(i.upiId)}
+              className="text-red-600 hover:text-red-800 transition duration-200"
+            >
               <FaTrash />
             </button>
           ),
@@ -93,26 +88,31 @@ const UpiIds = () => {
   )();
 
   return (
-    <>
-      <input
-        type="text"
-        id="number"
-        value={upiId}
-        onChange={(e) => setUpiId(e.target.value)}
-        placeholder="Enter Upi ID"
-        required
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ mt: 2 }}
-        onClick={addUpiId}
-      >
-        Add UPI ID
-      </Button>
+    <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-lg">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Manage UPI IDs</h1>
 
-      <main>{isLoading ? <Loader /> : Table}</main>
-    </>
+      <div className="flex items-center space-x-4 mb-6">
+        <input
+          type="text"
+          id="number"
+          value={upiId}
+          onChange={(e) => setUpiId(e.target.value)}
+          placeholder="Enter UPI ID"
+          required
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={addUpiId}
+          className="px-6 w-44 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+        >
+          Add UPI ID
+        </button>
+      </div>
+
+      <main className="bg-gray-50 rounded-lg p-4">
+        {isLoading ? <Loader /> : Table}
+      </main>
+    </div>
   );
 };
 

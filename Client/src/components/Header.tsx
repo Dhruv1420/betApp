@@ -18,6 +18,7 @@ const BottomNav: React.FC = () => {
       showLabels
       style={{ 
         position: 'fixed', 
+        height:"70px",
         bottom: 0, 
         width: '100%', 
         backgroundColor: '#4e44ce', // Custom background color

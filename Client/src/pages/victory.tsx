@@ -145,24 +145,37 @@ const App = () => {
   return (
     <div className="app">
       {/* Header Section */}
-      <div className="header">
-        <div className="user-info">
-          <p>
-            Username: <span className="font-bold">{user?.name}</span>
-          </p>
-          <p>
-            Balance: <span className="font-bold">{user?.coins.toFixed(2)}</span>
-          </p>
+      <div className="flex w-full bg-[#4e44ce] p-4 pb-0 h-full">
+        <div className="flex lg:px-12 px-4 justify-between w-full">
+          <div className="text-white">
+            <p>
+              Username: <span className="font-bold">{user?.name}</span>
+            </p>
+            <p>
+              Balance:{" "}
+              <span className="font-bold">{user?.coins.toFixed(2)}</span>
+            </p>
+          </div>
+
+          <h1 className="text-3xl text-white lg:flex hidden">Victory Online</h1>
+
+          <Link
+            to={"/login"}
+            onClick={logoutHandler}
+            
+          >
+            <button className="bg-red-500 px-8 translate-y-4 py-2 text-white rounded-lg shadow">
+              Exit
+            </button>
+            
+          </Link>
         </div>
-        <p>
+        
+      </div>
+      <p className="text-center bg-[#4e44ce] text-white py-4">
           Bets are scheduled to be placed every 5 minutes. Countdown to the next
           placement!
         </p>
-        <Link to={"/login"} onClick={logoutHandler} className="exit-btn">
-          Exit
-        </Link>
-      </div>
-
       {/* Tab Section */}
       <div className="tabs">
         {/* <button className="tab active">Plan</button>

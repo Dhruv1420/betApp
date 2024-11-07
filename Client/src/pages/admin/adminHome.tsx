@@ -1,42 +1,34 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const adminHome = () => {
+const AdminHome = () => {
   const navigate = useNavigate();
 
   return (
-    <>
-      <div>adminHome</div>
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        sx={{ mt: 2 }}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Home</h1>
+      
+      <button
+        className="w-full max-w-md bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 ease-in-out mb-4"
         onClick={() => navigate("/admin/users")}
       >
         Users
-      </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        sx={{ mt: 2 }}
+      </button>
+      
+      <button
+        className="w-full max-w-md bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 ease-in-out mb-4"
         onClick={() => navigate("/admin/lottrystart")}
       >
         Lottery Control
-      </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        sx={{ mt: 2 }}
+      </button>
+      
+      <button
+        className="w-full max-w-md bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 ease-in-out mb-4"
         onClick={() => navigate("/admin/upi")}
       >
         UPI IDs
-      </Button>
-    </>
+      </button>
+    </div>
   );
 };
 
-export default adminHome;
+export default AdminHome;
