@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { server } from "../contants/keys";
 import { userExist } from "../redux/reducer/userReducer";
 import "../styles/registration.scss";
+import { saveUserToLocalStorage } from "../utils/features";
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,7 @@ const Register = () => {
         config
       );
 
+      saveUserToLocalStorage(data.user);
       dispatch(userExist(data.user));
       toast.success(data.message, { id: toastId });
     } catch (error) {

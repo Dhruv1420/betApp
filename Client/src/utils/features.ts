@@ -3,7 +3,7 @@ import { MessageResponse } from "../types/apiTypes";
 import { SerializedError } from "@reduxjs/toolkit";
 import { NavigateFunction } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import { User } from "../types/types";
 
 type ResType =
   | {
@@ -28,3 +28,6 @@ export const responseToast = (
   }
 };
 
+export const saveUserToLocalStorage = (user: User) => {
+  localStorage.setItem("user", JSON.stringify(user));
+};

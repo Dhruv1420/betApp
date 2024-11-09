@@ -256,11 +256,11 @@ const Customers = () => {
   }, [data]);
 
   const Table = TableHOC<DataType>(
-    columns,
+    columns, 
     rows,
     "dashboardProductBox",
     "All Users",
-    rows.length > 4
+    rows.length > 50
   )();
 
   return (

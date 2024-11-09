@@ -17,6 +17,7 @@ import axios, { AxiosError } from "axios";
 import { server } from "../contants/keys";
 import { useDispatch } from "react-redux";
 import { userExist } from "../redux/reducer/userReducer";
+import { saveUserToLocalStorage } from "../utils/features";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +46,7 @@ const Login = () => {
         }
       );
 
+      saveUserToLocalStorage(data.user);
       dispatch(userExist(data.user));
       toast.success(data.message, { id: toastId });
     } catch (error) {
@@ -71,7 +73,6 @@ const Login = () => {
       handleLogin();
     }
   };
-  
 
   return (
     <>

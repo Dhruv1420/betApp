@@ -42,6 +42,11 @@ const App = () => {
       .get(`${server}/api/v1/user/me`, { withCredentials: true })
       .then(({ data }) => dispatch(userExist(data.user)))
       .catch(() => dispatch(userNotExist()));
+
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      dispatch(userExist(JSON.parse(savedUser)));
+    }
   }, [dispatch]);
 
   return loading ? (

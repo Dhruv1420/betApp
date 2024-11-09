@@ -140,6 +140,7 @@ const App = () => {
         withCredentials: true,
       });
 
+      localStorage.removeItem("user");
       dispatch(userNotExist());
       toast.success(data.message);
     } catch (error) {
