@@ -2,7 +2,6 @@
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import {
   AppBar,
-  Card,
   CardContent,
   Grid,
   IconButton,
@@ -108,9 +107,7 @@ function App() {
         </Toolbar>
       </AppBar>
       {/* Banner Section */}
-      <div
-        className="p-8 bg-[#4e44ce] flex justify-center items-center"
-      >
+      <div className="p-8 bg-[#4e44ce] flex justify-center items-center">
         <a href="/victory" target="_blank" rel="noopener noreferrer">
           <img
             src="/main.png"
@@ -129,7 +126,7 @@ function App() {
           {games.map((game, index) => (
             <Grid item xs={6} sm={4} md={3} key={index}>
               <div
-              className="flex items-center justify-center gap-4 shadow-lg rounded-xl hover:scale-95 transotion-all duration-300"
+                className="flex items-center justify-center gap-4 shadow-lg rounded-xl hover:scale-95 transotion-all duration-300"
                 onClick={() => handleCardClick(game.url)}
                 style={{ cursor: "pointer" }}
               >

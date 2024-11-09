@@ -26,6 +26,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Payment = lazy(() => import("./pages/Payment"));
 const Users = lazy(() => import("./pages/admin/users"));
 const UpiIds = lazy(() => import("./pages/admin/upiIds"));
+const ManualBettingPage = lazy(() => import("./pages/manualbatting"));
 const AdminHome = lazy(() => import("./pages/admin/adminHome"));
 // const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 const Withdraw = lazy(() => import("./pages/withdraw"));
@@ -86,6 +87,7 @@ const App = () => {
             <Route path="/payment" element={<Payment />} />
             <Route path="/withdraw" element={<Withdraw />} />
             <Route path="/about" element={<About />} />
+            <Route path="/manualbetting" element={<ManualBettingPage />} />
           </Route>
 
           {/* Admin Routes */}

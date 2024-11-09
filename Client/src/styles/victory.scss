@@ -87,10 +87,11 @@
     .buttons {
       display: flex;
       justify-content: space-around;
+      gap: 20px;
       padding: 20px;
   
       .one-click-btn {
-        width: 45%;
+        width: 30%;
         padding: 15px;
         font-size: 1rem;
         font-weight: bold;
@@ -111,6 +112,14 @@
           color: #333;
           &:hover {
             background-color: #d6d6d6;
+          }
+        }
+  
+        &.bet {
+          background-color: #003df5;
+          color: white;
+          &:hover {
+            background-color: #5d0bff;
           }
         }
       }

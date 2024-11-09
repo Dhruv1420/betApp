@@ -17,7 +17,7 @@ const lastGeneratedNumbers: { [key: string]: number } = {};
 const generateRandomNumber = (exclude: number): number => {
   let num: number;
   do {
-    num = Math.floor(Math.random() * (19 - 2 + 1)) + 2; // Generates a number between 2 and 19
+    num = Math.floor(Math.random() * (19 - 3 + 1)) + 3; // Generates a number between 3 and 19
   } while (num === exclude);
   return num;
 };

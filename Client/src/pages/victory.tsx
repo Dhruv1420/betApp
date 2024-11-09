@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import BottomNav from "../components/Header";
 import { server } from "../contants/keys";
@@ -29,6 +29,7 @@ const App = () => {
   const [bet, setBet] = useState<{ number: number; amount: string }>();
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTableData = async () => {
@@ -222,6 +223,12 @@ const App = () => {
         </button>
         <button className="one-click-btn close" onClick={stopBetting}>
           One-click close
+        </button>
+        <button
+          className="one-click-btn bet"
+          onClick={() => navigate("/manualbetting")}
+        >
+          Manual Bet
         </button>
       </div>
       <br />

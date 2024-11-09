@@ -81,7 +81,7 @@ const activeIntervals: { [key: string]: NodeJS.Timeout } = {};
 
 const initializeTable = () => {
   const table = [];
-  for (let i = 2; i <= 19; i++) {
+  for (let i = 3; i <= 19; i++) {
     table.push({
       number: i,
       period: 0,
@@ -98,7 +98,7 @@ let tableData = initializeTable();
 const generateRandomNumber = (exclude: number): number => {
   let num: number;
   do {
-    num = Math.floor(Math.random() * (19 - 2 + 1)) + 2;
+    num = Math.floor(Math.random() * (19 - 3 + 1)) + 3;
   } while (num === exclude);
   return num;
 };
@@ -191,8 +191,8 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("startBet", async ({ number, amount }) => {
     try {
-      if (number < 2 || number > 19)
-        socket.emit("error", { message: "Number should in between 2 and 19" });
+      if (number < 3 || number > 19)
+        socket.emit("error", { message: "Number should in between 3 and 19" });
       else if (amount <= 0)
         socket.emit("error", { message: "Amount should be poitive" });
       else {
