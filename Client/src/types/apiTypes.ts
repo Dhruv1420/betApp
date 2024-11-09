@@ -22,6 +22,7 @@ export type MessageResponse = {
   success: boolean;
   message: string;
   user?: User;
+  activeUserCounts?: number;
 };
 
 export type DeleteUserRequest = {

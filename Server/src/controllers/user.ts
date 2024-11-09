@@ -78,6 +78,16 @@ export const getAllUsers = TryCatch(async (req, res, next) => {
   });
 });
 
+export const getActiveUsers = TryCatch(async (req, res, next) => {
+  const activeUserCounts = await User.countDocuments({ status: "active" });
+
+  return res.status(200).json({
+    success: true,
+    message: "Active Users",
+    activeUserCounts,
+  });
+});
+
 export const getUser = TryCatch(async (req: AuthRequest, res, next) => {
   const id = req.params.id;
   const user = await User.findById(id);

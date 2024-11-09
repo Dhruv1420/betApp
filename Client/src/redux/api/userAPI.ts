@@ -62,6 +62,13 @@ export const userAPI = createApi({
       }),
       providesTags: ["users"],
     }),
+    getUserActiveCount: builder.query<MessageResponse, string>({
+      query: (id) => ({
+        url: `active?id=${id}`,
+        credentials: "include",
+      }),
+      providesTags: ["users"],
+    }),
   }),
 });
 
@@ -78,4 +85,5 @@ export const {
   useDeleteUserMutation,
   useAllUsersQuery,
   useGetUserQuery,
+  useGetUserActiveCountQuery,
 } = userAPI;

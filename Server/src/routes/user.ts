@@ -1,6 +1,7 @@
 import express from "express";
 import {
   deleteUser,
+  getActiveUsers,
   getAllUsers,
   getMyProfile,
   getUser,
@@ -23,6 +24,8 @@ app.get("/me", getMyProfile);
 app.use("/logout", logout);
 
 app.get("/all", adminOnly, getAllUsers);
+
+app.get("/active", adminOnly, getActiveUsers);
 
 app.route("/:id").get(getUser).put(updateUser).delete(adminOnly, deleteUser);
 
