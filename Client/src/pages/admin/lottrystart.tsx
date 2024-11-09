@@ -109,6 +109,7 @@ const AdminBettingInterface = () => {
   const handleStartBet = () => {
     if (socket && isConnected) {
       socket.emit("startBet", { number, amount });
+      toast.success("Bet Started");
       dispatch(betOpen());
     } else {
       toast.error("Not connected to server");
@@ -118,6 +119,7 @@ const AdminBettingInterface = () => {
   const handleStopBet = () => {
     if (socket && isConnected && activeBetId) {
       socket.emit("stopBet", { betId: activeBetId });
+      toast.success("Bet will end after next cycle");
       dispatch(betClose());
     } else {
       toast.error("No active bet to stop");
