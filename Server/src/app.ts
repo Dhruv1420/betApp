@@ -115,7 +115,7 @@ const getIncreasePercentage = (userNum: number): number => {
   return 0.03;
 };
 
-const getIncreaseTimesProfit = (userNum: number): number => {
+export const getIncreaseTimesProfit = (userNum: number): number => {
   if ([7, 8, 14, 15].includes(userNum)) return 15;
   if ([5, 6, 16, 17].includes(userNum)) return 22.5;
   if ([9, 10, 12, 13].includes(userNum)) return 11.25;

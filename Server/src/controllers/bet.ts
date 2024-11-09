@@ -4,6 +4,8 @@ import { Bet } from "../models/bet.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { GeneratedBet } from "../models/generatedBet.js";
 import { ControllerType } from "../types/types.js";
+import { User } from "../models/user.js";
+import { getIncreaseTimesProfit } from "../app.js";
 
 interface BetRequestBody {
   number: number;
@@ -202,5 +204,47 @@ export const tableData = TryCatch(async (req, res, next) => {
     success: true,
     data: data.tableData,
     betStatus: data.betStatus,
+  });
+});
+
+export const manualBetting = TryCatch(async (req, res, next) => {
+  const { id, amount, number } = req.body;
+  const user = await User.findById(id);
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  if (!amount || !number)
+    return next(new ErrorHandler("Please enter all fields", 400));
+  if (number < 3 || number > 19)
+    return next(new ErrorHandler("Number must be between 3 and 19", 400));
+  if (amount <= 0)
+    return next(new ErrorHandler("Please enter valid amount", 400));
+  if (amount > user.coins)
+    return next(new ErrorHandler("Insufficient coins", 400));
+
+  const randomNumber = Math.floor(Math.random() * (19 - 3 + 1)) + 3;
+  let profit = 0;
+  if (randomNumber != number) {
+    user.coins -= amount;
+  } else {
+    const prod = getIncreaseTimesProfit(number);
+    user.coins += amount * prod;
+    profit = amount * prod;
+  }
+  await user.save();
+
+  return res.status(200).json({
+    success: true,
+    message: "Bet successful",
+    profit,
+    randomNumber,
+  });
+});
+
+export const getWagerDetails = TryCatch(async (req, res, next) => {
+  const generatedBets = await GeneratedBet.find().sort({ createdAt: -1 });
+  return res.status(200).json({
+    success: true,
+    message: "Bets Generated Successfully",
+    generatedBets,
   });
 });

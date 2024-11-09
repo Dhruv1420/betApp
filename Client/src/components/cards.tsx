@@ -1,15 +1,5 @@
-// src/components/BetCard.tsx
-
 import React from "react";
-
-interface BetDetails {
-  amount: number | null;
-  selectedNumber: number | null;
-  status: string;
-  profit: number | null;
-  lotteryNumbers: number[];
-  betTime: string;
-}
+import { BetDetails } from "../pages/WagerDetails";
 
 const BetCard: React.FC<{ bet: BetDetails }> = ({ bet }) => {
   return (
@@ -20,7 +10,9 @@ const BetCard: React.FC<{ bet: BetDetails }> = ({ bet }) => {
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Amount:</span>
-        <span className="font-semibold">{bet.amount?.toFixed(2) || "0.00"}</span>
+        <span className="font-semibold">
+          {bet.amount?.toFixed(2) || "0.00"}
+        </span>
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Selected Number:</span>
@@ -28,7 +20,11 @@ const BetCard: React.FC<{ bet: BetDetails }> = ({ bet }) => {
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Status:</span>
-        <span className={`font-semibold ${bet.status === "Won" ? "text-green-600" : ""}`}>
+        <span
+          className={`font-semibold ${
+            bet.status === "Won" ? "text-green-600" : ""
+          }`}
+        >
           {bet.status}
         </span>
       </div>

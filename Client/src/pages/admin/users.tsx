@@ -51,6 +51,22 @@ interface DataType {
   action: ReactElement;
 }
 
+interface PaymentHistory {
+  amount: number;
+  referenceNumber: string;
+  status: string;
+}
+
+interface WithdrawHistory {
+  coins: number;
+  status: string;
+  accNo: string;
+  ifsc: string;
+  bankName: string;
+  receiverName: string;
+  contact: number;
+}
+
 const columns: Column<DataType>[] = [
   {
     Header: "ID",
@@ -94,14 +110,12 @@ const Customers = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
   const { isLoading, data, isError, error } = useAllUsersQuery(
     user?._id as string
-    
   );
-  const countPendingDeposits = (paymentHistory: any[]) => 
+  const countPendingDeposits = (paymentHistory: PaymentHistory[]) =>
     paymentHistory.filter((record) => record.status !== "completed").length;
 
-  const countPendingWithdraws = (withdrawHistory: any[]) => 
+  const countPendingWithdraws = (withdrawHistory: WithdrawHistory[]) =>
     withdrawHistory.filter((record) => record.status !== "approved").length;
-
 
   const [rows, setRows] = useState<DataType[]>([]);
   const [deleteUser] = useDeleteUserMutation();
@@ -239,28 +253,28 @@ const Customers = () => {
             i.referalCode === "" || i.referalCode === null
               ? "NaN"
               : i.referalCode,
-              paymentHistory: (
-                <Badge
-                  badgeContent={countPendingDeposits(i.paymentHistory)}
-                  color="secondary"
-                  overlap="circular"
-                >
-                  <button onClick={() => openDialogPayment(i._id, "deposit")}>
-                    <MdOutlinePayment />
-                  </button>
-                </Badge>
-              ),
-              withdrawHistory: (
-                <Badge
-                  badgeContent={countPendingWithdraws(i.withdrawHistory)}
-                  color="secondary"
-                  overlap="circular"
-                >
-                  <button onClick={() => openDialogPayment(i._id, "withdraw")}>
-                    <MdOutlinePayment />
-                  </button>
-                </Badge>
-              ),
+          paymentHistory: (
+            <Badge
+              badgeContent={countPendingDeposits(i.paymentHistory)}
+              color="secondary"
+              overlap="circular"
+            >
+              <button onClick={() => openDialogPayment(i._id, "deposit")}>
+                <MdOutlinePayment />
+              </button>
+            </Badge>
+          ),
+          withdrawHistory: (
+            <Badge
+              badgeContent={countPendingWithdraws(i.withdrawHistory)}
+              color="secondary"
+              overlap="circular"
+            >
+              <button onClick={() => openDialogPayment(i._id, "withdraw")}>
+                <MdOutlinePayment />
+              </button>
+            </Badge>
+          ),
           addCoins: (
             <button onClick={() => openDialog(i._id)}>
               <BiCoinStack />
@@ -277,7 +291,7 @@ const Customers = () => {
   }, [data]);
 
   const Table = TableHOC<DataType>(
-    columns, 
+    columns,
     rows,
     "dashboardProductBox",
     "All Users",
@@ -481,7 +495,7 @@ const Customers = () => {
                   </Typography>
 
                   <button
-                  className=" rounded-lg bg-[#4e44ce] px-2 mx-2 py-1 text-white"
+                    className=" rounded-lg bg-[#4e44ce] px-2 mx-2 py-1 text-white"
                     onClick={() =>
                       changeStatusWithdraw(
                         userr._id,
@@ -495,14 +509,13 @@ const Customers = () => {
                       )
                     }
                     aria-label="Change Status"
-                    
                   >
                     Approved
                   </button>
 
                   <button
-                  className=" rounded-lg bg-red-500 w-44 mx-2 px-2 py-1 text-white"
-                  onClick={() =>
+                    className=" rounded-lg bg-red-500 w-44 mx-2 px-2 py-1 text-white"
+                    onClick={() =>
                       changeStatusWithdraw(
                         userr._id,
                         record.coins,
@@ -515,7 +528,6 @@ const Customers = () => {
                       )
                     }
                     aria-label="Change Status"
-                    
                   >
                     Not Approved
                   </button>
