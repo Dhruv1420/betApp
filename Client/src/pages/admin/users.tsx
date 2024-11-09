@@ -23,6 +23,7 @@ import { Column } from "react-table";
 import TableHOC from "../../components/admin/TableHOC";
 import Loader from "../../components/Loader";
 import { useAddCoinsMutation } from "../../redux/api/adminAPI";
+import Badge from "@mui/material/Badge";
 import {
   useAllUsersQuery,
   useDeleteUserMutation,
@@ -93,7 +94,14 @@ const Customers = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
   const { isLoading, data, isError, error } = useAllUsersQuery(
     user?._id as string
+    
   );
+  const countPendingDeposits = (paymentHistory: any[]) => 
+    paymentHistory.filter((record) => record.status !== "completed").length;
+
+  const countPendingWithdraws = (withdrawHistory: any[]) => 
+    withdrawHistory.filter((record) => record.status !== "approved").length;
+
 
   const [rows, setRows] = useState<DataType[]>([]);
   const [deleteUser] = useDeleteUserMutation();
@@ -231,16 +239,28 @@ const Customers = () => {
             i.referalCode === "" || i.referalCode === null
               ? "NaN"
               : i.referalCode,
-          paymentHistory: (
-            <button onClick={() => openDialogPayment(i._id, "deposit")}>
-              <MdOutlinePayment />
-            </button>
-          ),
-          withdrawHistory: (
-            <button onClick={() => openDialogPayment(i._id, "withdraw")}>
-              <MdOutlinePayment />
-            </button>
-          ),
+              paymentHistory: (
+                <Badge
+                  badgeContent={countPendingDeposits(i.paymentHistory)}
+                  color="secondary"
+                  overlap="circular"
+                >
+                  <button onClick={() => openDialogPayment(i._id, "deposit")}>
+                    <MdOutlinePayment />
+                  </button>
+                </Badge>
+              ),
+              withdrawHistory: (
+                <Badge
+                  badgeContent={countPendingWithdraws(i.withdrawHistory)}
+                  color="secondary"
+                  overlap="circular"
+                >
+                  <button onClick={() => openDialogPayment(i._id, "withdraw")}>
+                    <MdOutlinePayment />
+                  </button>
+                </Badge>
+              ),
           addCoins: (
             <button onClick={() => openDialog(i._id)}>
               <BiCoinStack />

@@ -168,6 +168,7 @@ export default function AdminComponent() {
             <p className="mb-2">Initial Number: {bet.number}</p>
             <p className="mb-2">Initial Amount: ${bet.amount.toFixed(2)}</p>
             <h4 className="text-lg font-medium mb-2">Generated Numbers:</h4>
+            <div style={{ maxHeight: "500px", overflowY: "scroll" }}>
             <ul className="list-disc pl-5">
               {bet.generatedNumbers.map((gen, index) => (
                 <li key={index} className="mb-2">
@@ -176,6 +177,7 @@ export default function AdminComponent() {
                 </li>
               ))}
             </ul>
+            </div>
             <button
               onClick={() => handleStopBet(bet._id)}
               className="bg-red-500 text-white px-4 py-2 rounded mt-2"
