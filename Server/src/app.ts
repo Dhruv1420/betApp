@@ -1,21 +1,21 @@
-import { Server, Socket } from "socket.io";
-import { createServer } from "http";
-import express from "express";
-import { config } from "dotenv";
-import cors from "cors";
 import cookieParser from "cookie-parser";
-import { errorMiddleware } from "./middlewares/error.js";
-import { connectDB } from "./utils/features.js";
+import cors from "cors";
+import { config } from "dotenv";
+import express from "express";
+import { createServer } from "http";
+import { Server, Socket } from "socket.io";
 import { corsOption } from "./constants/config.js";
+import { errorMiddleware } from "./middlewares/error.js";
 import { Bet } from "./models/bet.js";
 import { GeneratedBet } from "./models/generatedBet.js";
+import { connectDB } from "./utils/features.js";
 
+import { User } from "./models/user.js";
 import betRoute from "./routes/bet.js";
 import paymentRoute from "./routes/payment.js";
 import dashboardRoute from "./routes/stats.js";
-import userRoute from "./routes/user.js";
 import upiIdRoute from "./routes/upiId.js";
-import { User } from "./models/user.js";
+import userRoute from "./routes/user.js";
 
 config({
   path: "./.env",
@@ -77,7 +77,9 @@ app.get("/api/v1/bets", async (req, res) => {
 });
 
 // Store active intervals
-const activeIntervals: { [key: string]: NodeJS.Timeout } = {};
+const activeIntervals: {
+  [key: string]: { intervalId: NodeJS.Timeout; stopRequested: boolean };
+} = {};
 
 const initializeTable = () => {
   const table = [];
@@ -125,6 +127,69 @@ const startBetInterval = async (bet: any) => {
   const increasePercentage = getIncreasePercentage(bet.number);
 
   const intervalId = setInterval(async () => {
+    if (activeIntervals[bet._id.toString()]?.stopRequested) {
+      clearInterval(intervalId);
+      delete activeIntervals[bet._id.toString()];
+
+      const lastGeneratedBet = await GeneratedBet.findOne({
+        betId: bet._id,
+      }).sort({
+        timestamp: -1,
+      });
+
+      if (lastGeneratedBet) {
+        const finalAmount =
+          lastGeneratedBet.updatedAmount * (1 + increasePercentage);
+
+        tableData = tableData.map((entry) => {
+          if (entry.number === bet.number) {
+            return {
+              ...entry,
+              period: entry.period + 1,
+              empty: 0,
+              amount: finalAmount,
+            };
+          } else {
+            return {
+              ...entry,
+              empty: entry.empty + 1,
+            };
+          }
+        });
+
+        await GeneratedBet.create({
+          betId: bet._id,
+          betStatus: "inactive",
+          generatedNumber: bet.number,
+          updatedAmount: finalAmount,
+          tableData,
+          timestamp: new Date(),
+        });
+
+        await Bet.findByIdAndUpdate(bet._id, {
+          amount: finalAmount,
+          status: "completed",
+        });
+
+        const users = await User.find({ status: "active" });
+        users.forEach(async (user) => {
+          user.coins += finalAmount * getIncreaseTimesProfit(bet.number);
+          user.status = "inactive";
+          await user.save();
+        });
+
+        io.emit("betStopped", {
+          betId: bet._id,
+          betStatus: "inactive",
+          lastGeneratedNumber: bet.number,
+          finalAmount: finalAmount.toFixed(2),
+          profit: finalAmount * getIncreaseTimesProfit(bet.number),
+          tableData,
+        });
+      }
+      return;
+    }
+
     const randomNum = generateRandomNumber(bet.number);
     currentAmount *= 1 + increasePercentage;
 
@@ -173,7 +238,7 @@ const startBetInterval = async (bet: any) => {
     });
   }, 10 * 1000);
 
-  activeIntervals[bet._id.toString()] = intervalId;
+  activeIntervals[bet._id.toString()] = { intervalId, stopRequested: false };
 };
 
 // Check for any active bets on server start and restart their intervals
@@ -233,71 +298,11 @@ io.on("connection", (socket: Socket) => {
     try {
       const intervalId = activeIntervals[betId];
       if (intervalId) {
-        clearInterval(intervalId);
-        delete activeIntervals[betId];
-
-        const bet = await Bet.findById(betId);
-        if (bet) {
-          const lastGeneratedBet = await GeneratedBet.findOne({ betId }).sort({
-            timestamp: -1,
-          });
-
-          if (lastGeneratedBet) {
-            const increasePercentage = getIncreasePercentage(bet.number);
-            const finalAmount =
-              lastGeneratedBet.updatedAmount * (1 + increasePercentage);
-
-            tableData = tableData.map((entry) => {
-              if (entry.number === bet.number) {
-                return {
-                  ...entry,
-                  period: entry.period + 1,
-                  empty: 0,
-                  amount: finalAmount,
-                };
-              } else {
-                return {
-                  ...entry,
-                  empty: entry.empty + 1,
-                };
-              }
-            });
-
-            await GeneratedBet.create({
-              betId: bet._id,
-              betStatus: "inactive",
-              generatedNumber: bet.number,
-              updatedAmount: finalAmount,
-              tableData,
-              timestamp: new Date(),
-            });
-
-            await Bet.findByIdAndUpdate(betId, {
-              amount: finalAmount,
-              status: "completed",
-            });
-
-            const users = await User.find({ status: "active" });
-            users.forEach(async (user) => {
-              user.coins += finalAmount * getIncreaseTimesProfit(bet.number);
-              user.status = "inactive";
-              await user.save();
-            });
-
-            io.emit("betStopped", {
-              betId,
-              betStatus: "inactive",
-              lastGeneratedNumber: bet.number,
-              finalAmount: finalAmount.toFixed(2),
-              profit: finalAmount * getIncreaseTimesProfit(bet.number),
-              tableData,
-            });
-          } else {
-            socket.emit("error", { message: "No generated numbers found" });
-          }
-        } else {
-          socket.emit("error", { message: "Bet not found" });
-        }
+        activeIntervals[betId].stopRequested = true;
+        socket.emit("betStopScheduled", {
+          betId,
+          message: "Bet stop scheduled for next cycle",
+        });
       } else {
         socket.emit("error", { message: "No active bet found with this ID" });
       }

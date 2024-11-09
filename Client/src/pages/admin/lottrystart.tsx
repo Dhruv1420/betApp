@@ -18,6 +18,7 @@ interface ServerToClientEvents {
     lastGeneratedNumber: number;
     finalAmount: string;
   }) => void;
+  betStopScheduled: (data: { betId: string; message: string }) => void;
   error: (data: { message: string }) => void;
 }
 
@@ -80,6 +81,10 @@ const AdminBettingInterface = () => {
       toast.success("Bet ended");
     });
 
+    newSocket.on("betStopScheduled", (data) => {
+      toast.success(data.message);
+    });
+
     newSocket.on("betStopped", (data) => {
       setActiveBetId(null);
       dispatch(betClose());
@@ -95,7 +100,7 @@ const AdminBettingInterface = () => {
     return () => {
       newSocket.disconnect();
     };
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     connectSocket();
