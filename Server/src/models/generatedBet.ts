@@ -10,6 +10,7 @@ const generatedBetSchema = new mongoose.Schema({
     enum: ["active", "inactive"],
     default: "inactive",
   },
+  lotteryNumber: { type: Array, required: true },
   tableData: [
     {
       number: { type: Number, required: true },

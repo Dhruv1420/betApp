@@ -5,12 +5,13 @@ import express from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import { corsOption } from "./constants/config.js";
+import { sumPairs } from "./constants/keys.js";
 import { errorMiddleware } from "./middlewares/error.js";
 import { Bet } from "./models/bet.js";
 import { GeneratedBet } from "./models/generatedBet.js";
+import { User } from "./models/user.js";
 import { connectDB } from "./utils/features.js";
 
-import { User } from "./models/user.js";
 import betRoute from "./routes/bet.js";
 import paymentRoute from "./routes/payment.js";
 import dashboardRoute from "./routes/stats.js";
@@ -122,6 +123,24 @@ const getIncreaseTimesProfit = (userNum: number): number => {
   return 45;
 };
 
+const generateLotteryNumber = (generatedNumber: number): number[] => {
+  const pairs = sumPairs[generatedNumber];
+  let [firstNum, secondNum] = pairs[Math.floor(Math.random() * pairs.length)];
+
+  if (Math.random() > 0.5) {
+    [firstNum, secondNum] = [secondNum, firstNum];
+  }
+
+  const lotteryNumber = [firstNum, secondNum];
+
+  for (let i = 0; i < 8; i++) {
+    const randomNum = Math.floor(Math.random() * 10) + 1;
+    lotteryNumber.push(randomNum);
+  }
+
+  return lotteryNumber;
+};
+
 const startBetInterval = async (bet: any) => {
   tableData = initializeTable();
   let currentAmount = bet.amount;
@@ -158,11 +177,14 @@ const startBetInterval = async (bet: any) => {
           }
         });
 
+        const lotteryNumber = generateLotteryNumber(bet.number);
+
         await GeneratedBet.create({
           betId: bet._id,
           betStatus: "inactive",
           generatedNumber: bet.number,
           updatedAmount: finalAmount,
+          lotteryNumber,
           tableData,
           timestamp: new Date(),
         });
@@ -184,6 +206,7 @@ const startBetInterval = async (bet: any) => {
           betStatus: "inactive",
           lastGeneratedNumber: bet.number,
           finalAmount: finalAmount.toFixed(2),
+          lotteryNumber,
           profit: finalAmount * getIncreaseTimesProfit(bet.number),
           tableData,
         });
@@ -210,6 +233,8 @@ const startBetInterval = async (bet: any) => {
       }
     });
 
+    const lotteryNumber = generateLotteryNumber(randomNum);
+
     const users = await User.find({ status: "active" });
     users.forEach(async (user) => {
       if (user.coins < currentAmount) {
@@ -226,6 +251,7 @@ const startBetInterval = async (bet: any) => {
       betStatus: "active",
       generatedNumber: randomNum,
       updatedAmount: currentAmount,
+      lotteryNumber,
       tableData,
       timestamp: new Date(),
     });
@@ -235,6 +261,7 @@ const startBetInterval = async (bet: any) => {
       betStatus: "active",
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2),
+      lotteryNumber,
       tableData,
     });
   }, 10 * 1000);
