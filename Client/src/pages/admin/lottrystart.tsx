@@ -100,6 +100,7 @@ const AdminBettingInterface = () => {
           return bet;
         })
       );
+      setActiveBetId(data.betId);
       setGeneratedNumbers((prev) => [
         ...prev,
         { number: data.generatedNumber, amount: data.updatedAmount },
@@ -116,7 +117,7 @@ const AdminBettingInterface = () => {
           if (bet._id === data.betId) {
             return {
               ...bet,
-              status: "inactive",
+              status: "completed",
               generatedNumbers: [
                 ...bet.generatedNumbers,
                 {
@@ -157,9 +158,9 @@ const AdminBettingInterface = () => {
     }
   };
 
-  const handleStopBet = () => {
-    if (socket && isConnected && activeBetId) {
-      socket.emit("stopBet", { betId: activeBetId });
+  const handleStopBet = (bet_id: string) => {
+    if (socket && isConnected && bet_id) {
+      socket.emit("stopBet", { betId: bet_id });
       dispatch(betClose());
     } else {
       toast.error("No active bet to stop");
@@ -229,17 +230,6 @@ const AdminBettingInterface = () => {
           >
             Start Bet
           </button>
-          <button
-            onClick={handleStopBet}
-            disabled={!isConnected || activeBetId === null}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium text-white ${
-              !isConnected || activeBetId === null
-                ? "bg-red-300 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
-          >
-            Stop Bet
-          </button>
         </div>
 
         {bets.length > 0 ? (
@@ -249,6 +239,17 @@ const AdminBettingInterface = () => {
               <p className="mb-2">Status: {bet.status}</p>
               <p className="mb-2">Initial Number: {bet.number}</p>
               <p className="mb-2">Initial Amount: ${bet.amount.toFixed(2)}</p>
+              <button
+                onClick={() => handleStopBet(bet._id)}
+                disabled={!isConnected || bet.status === "completed"}
+                className={`flex-1 px-4 py-2 rounded-lg font-medium text-white ${
+                  !isConnected || bet.status === "completed"
+                    ? "bg-red-300 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
+              >
+                Stop Bet
+              </button>
             </div>
           ))
         ) : (

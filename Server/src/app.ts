@@ -170,7 +170,7 @@ const startContinuousInterval = () => {
         timestamp: new Date(),
       });
     }
-  }, 600 * 1000);
+  }, 10 * 1000);
 
   return intervalId;
 };
