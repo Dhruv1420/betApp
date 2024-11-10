@@ -11,6 +11,8 @@ const generatedBetSchema = new mongoose.Schema({
     default: "inactive",
   },
   lotteryNumber: { type: Array, required: true },
+  profit: { type: Number, required: true, default: 0 },
+  userIds: {type: Array, required: true},
   tableData: [
     {
       number: { type: Number, required: true },

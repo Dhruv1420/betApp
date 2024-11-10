@@ -1,22 +1,22 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import BottomNav from "../components/Header";
 import BetCard from "../components/cards";
 import { server } from "../contants/keys";
 import { RootState } from "../redux/store";
-import axios from "axios";
-import toast from "react-hot-toast";
 
 const socket = io(`${server}`);
 
 export interface BetDetails {
-  amount: number | null;
-  selectedNumber: number | null;
+  amount: string;
+  number: number;
   status: string;
-  profit: number | null;
+  profit: number;
   lotteryNumbers: number[];
-  betTime: string;
+  time: number;
 }
 
 const WagerDetails = () => {
@@ -31,16 +31,7 @@ const WagerDetails = () => {
         });
 
         if (data) {
-          toast.success(data.message);
-          const newBet: BetDetails = {
-            amount: data.updatedAmount || 0.0,
-            selectedNumber: data.generatedNumber || null,
-            status: "Lose",
-            profit: data?.profit || 0.0,
-            lotteryNumbers: data.lotteryNumber,
-            betTime: new Date().toISOString(),
-          };
-          setBets((prevBets) => [newBet, ...prevBets]);
+          setBets(data);
         } else {
           toast.error("Error in accesing bet details");
         }
@@ -53,34 +44,36 @@ const WagerDetails = () => {
     fetchBets();
 
     socket.on("newGeneratedNumber", (data) => {
-      const newBet: BetDetails = {
-        amount: data.finalAmount || 0.0,
-        selectedNumber: data.lastGeneratedNumber || null,
+      const details: BetDetails = {
+        amount: data.updatedAmount,
+        number: data.generatedNumber,
         status: "Lose",
-        profit: data?.profit || 0.0,
+        profit: 0,
         lotteryNumbers: data.lotteryNumber,
-        betTime: new Date().toISOString(),
+        time: new Date().getTime(),
       };
-      setBets((prevBets) => [newBet, ...prevBets]);
-    })
+      setBets((prevBets) => [details, ...prevBets]);
+    });
 
     socket.on("betStopped", (data) => {
-      const newBet: BetDetails = {
-        amount: data.finalAmount || 0.0,
-        selectedNumber: data.lastGeneratedNumber || null,
-        status: "Won",
-        profit: data.profit || 0.0,
-        lotteryNumbers: data.lotteryNumber,
-        betTime: new Date().toISOString(),
+      const status = data.userIds.includes(user?._id) ? "Won" : "Lose";
+      const profit = status === "Won" ? data.profit : 0;
+      const details: BetDetails = {
+        amount: data.finalAmount,
+        number: data.lastGeneratedNumber,
+        status,
+        profit,
+        lotteryNumbers: data.lotteryNumbers,
+        time: new Date().getTime(),
       };
-      setBets((prevBets) => [newBet, ...prevBets]);
+      setBets((prevBets) => [details, ...prevBets]);
     });
 
     return () => {
       socket.off("betStopped");
       socket.off("newGeneratedNumber");
     };
-  }, []);
+  }, [user?._id]);
 
   return (
     <>

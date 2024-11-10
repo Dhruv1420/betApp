@@ -10,6 +10,11 @@ const schema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["active", "completed"],
+      default: "completed",
+    },
   },
   {
     timestamps: true,

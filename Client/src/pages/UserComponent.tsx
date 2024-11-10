@@ -1,33 +1,38 @@
-import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
 import axios from "axios";
-import { Bet } from "../types/types";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import io from "socket.io-client";
 import BottomNav from "../components/Header";
 import { server } from "../contants/keys";
+
+interface Bet {
+  number: number;
+  amount: string;
+  time: number;
+}
 
 const socket = io(`${server}`);
 
 export default function UserComponent() {
   const [bets, setBets] = useState<Bet[]>([]);
-  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchBets = async () => {
       try {
-        const response = await axios.get<Bet[]>(`${server}/api/v1/bets`, {
-          headers: {
-            Accept: "application/json",
-          },
-        });
-        if (Array.isArray(response.data)) {
+        const response = await axios.get<Bet[]>(
+          `${server}/api/v1/bet/results`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (response.data) {
           setBets(response.data);
-        } else {
-          console.error("API did not return an array:", response.data);
-          setError("Failed to fetch bets: Invalid data format");
+        }else{
+          toast.error("Failed to fetch bets");
         }
       } catch (err) {
         console.error("Error fetching bets:", err);
-        setError(
+        toast.error(
           "Failed to fetch bets. Please check your API endpoint and server configuration."
         );
       }
@@ -36,46 +41,17 @@ export default function UserComponent() {
     fetchBets();
 
     socket.on("newGeneratedNumber", (data) => {
-      setBets((prevBets) =>
-        prevBets.map((bet) => {
-          if (bet._id === data.betId) {
-            return {
-              ...bet,
-              generatedNumbers: [
-                ...bet.generatedNumbers,
-                {
-                  generatedNumber: data.generatedNumber,
-                  updatedAmount: parseFloat(data.updatedAmount),
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-            };
-          }
-          return bet;
-        })
-      );
+      console.log(data);
+      const result: Bet = {
+        number: data.generatedNumber,
+        amount: data.updatedAmount,
+        time: new Date().getTime(),
+      };
+      setBets((prev) => [result, ...prev]);
     });
 
     socket.on("betStopped", (data) => {
-      setBets((prevBets) =>
-        prevBets.map((bet) => {
-          if (bet._id === data.betId) {
-            return {
-              ...bet,
-              status: "completed",
-              generatedNumbers: [
-                ...bet.generatedNumbers,
-                {
-                  generatedNumber: data.lastGeneratedNumber,
-                  updatedAmount: parseFloat(data.finalAmount),
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-            };
-          }
-          return bet;
-        })
-      );
+      setBets(data.tableData);
     });
 
     return () => {
@@ -83,10 +59,6 @@ export default function UserComponent() {
       socket.off("betStopped");
     };
   }, []);
-
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
-  }
 
   return (
     <>
@@ -108,29 +80,18 @@ export default function UserComponent() {
               </tr>
             </thead>
             <tbody>
-              {bets.map((bet) => (
-                <React.Fragment key={bet._id}>
-                  {bet.generatedNumbers
-                    .slice() // Create a shallow copy to avoid mutating the original array
-                    .sort(
-                      (a, b) =>
-                        new Date(b.timestamp).getTime() -
-                        new Date(a.timestamp).getTime()
-                    ) // Sort by timestamp (latest first)
-                    .map((gen, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="py-2 text-center px-4 border-b">
-                          {gen.generatedNumber}
-                        </td>
-                        <td className="py-2 text-center px-4 border-b">
-                          {gen.updatedAmount.toFixed(2)}
-                        </td>
-                        <td className="py-2 text-center px-4 border-b">
-                          {new Date(gen.timestamp).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                </React.Fragment>
+              {bets.map((bet, idx) => (
+                <tr key={idx} className="border-b">
+                  <td className="py-2 text-center px-4 border-b">
+                    {bet.number}
+                  </td>
+                  <td className="py-2 text-center px-4 border-b">
+                    {bet.amount}
+                  </td>
+                  <td className="py-2 text-center px-4 border-b">
+                    {new Date(bet.time).toLocaleString()}
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>

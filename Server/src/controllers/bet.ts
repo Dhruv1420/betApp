@@ -241,10 +241,48 @@ export const manualBetting = TryCatch(async (req, res, next) => {
 });
 
 export const getWagerDetails = TryCatch(async (req, res, next) => {
-  const generatedBets = await GeneratedBet.find().sort({ createdAt: -1 });
-  return res.status(200).json({
-    success: true,
-    message: "Bets Generated Successfully",
-    generatedBets,
+  const generatedBets = await GeneratedBet.find().sort({ timestamp: -1 });
+
+  const results = generatedBets.map((bet) => {
+    return {
+      amount: bet.updatedAmount.toFixed(2),
+      number: bet.generatedNumber,
+      status: bet.profit > 0 ? "Win" : "Loss",
+      profit: bet.profit,
+      lotteryNumbers: bet.lotteryNumber,
+      time: bet.timestamp,
+    };
   });
+
+  return res.status(200).json(results);
+});
+
+export const getBets = TryCatch(async (req, res, next) => {
+  const bets = await Bet.find().sort({ createdAt: -1 }).limit(10);
+  const betsWithNumbers = await Promise.all(
+    bets.map(async (bet) => {
+      const generatedNumbers = await GeneratedBet.find({
+        betId: bet._id,
+      }).sort({ timestamp: 1 });
+      return {
+        ...bet.toObject(),
+        generatedNumbers: generatedNumbers,
+      };
+    })
+  );
+
+  return res.status(200).json(betsWithNumbers);
+});
+
+export const getResults = TryCatch(async (req, res, next) => {
+  const bets = await GeneratedBet.find().sort({ timestamp: -1 });
+  const results = bets.map((bet) => {
+    return {
+      number: bet.generatedNumber,
+      amount: bet.updatedAmount.toFixed(2),
+      time: bet.timestamp,
+    };
+  });
+
+  return res.status(200).json(results);
 });

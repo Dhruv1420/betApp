@@ -11,7 +11,7 @@ import { updateUser, userNotExist } from "../redux/reducer/userReducer";
 import { RootState } from "../redux/store";
 import "../styles/victory.scss";
 
-interface TableData {
+export interface TableData {
   number: number;
   period: number;
   empty: number;

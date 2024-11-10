@@ -57,27 +57,6 @@ app.use("/api/v1/bet", betRoute);
 app.use("/api/v1/dashboard", dashboardRoute);
 app.use("/api/v1/upi", upiIdRoute);
 
-// New route to get all bets (active and completed) with their generated numbers
-app.get("/api/v1/bets", async (req, res) => {
-  try {
-    const bets = await Bet.find().sort({ createdAt: -1 }).limit(10);
-    const betsWithNumbers = await Promise.all(
-      bets.map(async (bet) => {
-        const generatedNumbers = await GeneratedBet.find({
-          betId: bet._id,
-        }).sort({ timestamp: 1 });
-        return {
-          ...bet.toObject(),
-          generatedNumbers: generatedNumbers,
-        };
-      })
-    );
-    res.json(betsWithNumbers);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching bets" });
-  }
-});
-
 // Store active intervals
 const activeIntervals: {
   [key: string]: { intervalId: NodeJS.Timeout; stopRequested: boolean };
@@ -88,7 +67,7 @@ const initializeTable = () => {
   for (let i = 3; i <= 19; i++) {
     table.push({
       number: i,
-      period: 0,
+      period: 100000,
       empty: 0,
       amount: 0,
       status: "inactive",
@@ -141,9 +120,66 @@ const generateLotteryNumber = (generatedNumber: number): number[] => {
   return lotteryNumber;
 };
 
+let isAdminControlled = false;
+
+const startContinuousInterval = () => {
+  let currentAmount = 0;
+  let activeBetId: string | null = null;
+
+  const intervalId = setInterval(async () => {
+    if (activeBetId && activeIntervals[activeBetId]?.stopRequested) {
+      activeIntervals[activeBetId].stopRequested = false;
+      currentAmount = 0;
+      activeBetId = null;
+    }
+
+    const randomNum = generateRandomNumber(1);
+    const lotteryNumber = generateLotteryNumber(randomNum);
+
+    tableData = tableData.map((entry) => {
+      if (entry.number === randomNum) {
+        return {
+          ...entry,
+          period: entry.period + 1,
+          empty: 0,
+          amount: currentAmount,
+        };
+      } else {
+        return {
+          ...entry,
+          empty: entry.empty + 1,
+        };
+      }
+    });
+
+    io.emit("newGeneratedNumber", {
+      betStatus: isAdminControlled ? "active" : "inactive",
+      generatedNumber: randomNum,
+      updatedAmount: currentAmount.toFixed(2),
+      lotteryNumber,
+      tableData,
+    });
+
+    if (!activeBetId) {
+      await GeneratedBet.create({
+        betStatus: "inactive",
+        generatedNumber: randomNum,
+        updatedAmount: currentAmount,
+        lotteryNumber,
+        tableData,
+        timestamp: new Date(),
+      });
+    }
+  }, 10 * 1000);
+
+  return intervalId;
+};
+
+const continuousIntervalId = startContinuousInterval();
+
 const startBetInterval = async (bet: any) => {
   tableData = initializeTable();
-  let currentAmount = bet.amount;
+  let currentAmount = isAdminControlled ? bet.amount : 0;
   const increasePercentage = getIncreasePercentage(bet.number);
 
   const intervalId = setInterval(async () => {
@@ -179,16 +215,6 @@ const startBetInterval = async (bet: any) => {
 
         const lotteryNumber = generateLotteryNumber(bet.number);
 
-        await GeneratedBet.create({
-          betId: bet._id,
-          betStatus: "inactive",
-          generatedNumber: bet.number,
-          updatedAmount: finalAmount,
-          lotteryNumber,
-          tableData,
-          timestamp: new Date(),
-        });
-
         await Bet.findByIdAndUpdate(bet._id, {
           amount: finalAmount,
           status: "completed",
@@ -201,21 +227,45 @@ const startBetInterval = async (bet: any) => {
           await user.save();
         });
 
+        const userIds = users.map((user) => user._id);
+
+        await GeneratedBet.create({
+          betId: bet._id,
+          betStatus: "inactive",
+          generatedNumber: bet.number,
+          updatedAmount: finalAmount,
+          profit: finalAmount * getIncreaseTimesProfit(bet.number),
+          userIds,
+          lotteryNumber,
+          tableData,
+          timestamp: new Date(),
+        });
+
         io.emit("betStopped", {
           betId: bet._id,
           betStatus: "inactive",
           lastGeneratedNumber: bet.number,
           finalAmount: finalAmount.toFixed(2),
+          userIds,
           lotteryNumber,
           profit: finalAmount * getIncreaseTimesProfit(bet.number),
           tableData,
         });
       }
+
+      isAdminControlled = false;
       return;
     }
 
-    const randomNum = generateRandomNumber(bet.number);
-    currentAmount *= 1 + increasePercentage;
+    const randomNum = isAdminControlled
+      ? generateRandomNumber(bet.number)
+      : generateRandomNumber(1);
+
+    if (isAdminControlled) {
+      currentAmount *= 1 + increasePercentage;
+    } else {
+      currentAmount = 0;
+    }
 
     tableData = tableData.map((entry) => {
       if (entry.number === randomNum) {
@@ -248,7 +298,7 @@ const startBetInterval = async (bet: any) => {
 
     await GeneratedBet.create({
       betId: bet._id,
-      betStatus: "active",
+      betStatus: isAdminControlled ? "active" : "inactive",
       generatedNumber: randomNum,
       updatedAmount: currentAmount,
       lotteryNumber,
@@ -258,7 +308,7 @@ const startBetInterval = async (bet: any) => {
 
     io.emit("newGeneratedNumber", {
       betId: bet._id,
-      betStatus: "active",
+      betStatus: isAdminControlled ? "active" : "inactive",
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2),
       lotteryNumber,
@@ -289,8 +339,12 @@ io.on("connection", (socket: Socket) => {
       else if (amount <= 0)
         socket.emit("error", { message: "Amount should be poitive" });
       else {
+        clearInterval(continuousIntervalId);
+
         tableData = initializeTable();
         const bet = await Bet.create({ number, amount, status: "active" });
+        isAdminControlled = true;
+
         startBetInterval(bet);
 
         io.emit("betStarted", {

@@ -1,6 +1,8 @@
 import express from "express";
 import {
+  getBets,
   getNumber,
+  getResults,
   getWagerDetails,
   manualBetting,
   stopNumberGeneration,
@@ -14,6 +16,8 @@ app.post("/new", adminOnly, getNumber);
 app.post("/stopbet/:betId", stopNumberGeneration);
 app.get("/victory", tableData);
 app.post("/manualbet", manualBetting);
-app.get("/wagerdeatils", getWagerDetails);
+app.get("/wagerdetails", getWagerDetails);
+app.get("/bets", getBets);
+app.get("/results", getResults);
 
 export default app;

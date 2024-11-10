@@ -1,4 +1,3 @@
-// App.tsx
 import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,27 +7,24 @@ import { userExist, userNotExist } from "./redux/reducer/userReducer";
 import { RootState } from "./redux/store";
 
 import ProtectedRoute from "./components/ProtectedRoute";
-// import BettingResult from "./pages/Bettingresult";
-// import BettingComponent from "./pages/BettingComponent";
-import AdminComponent from "./pages/admin/AdminComponent";
-import UserComponent from "./pages/UserComponent";
-import WagerDetails from "./pages/WagerDetails";
 
 const Home = lazy(() => import("./pages/Home"));
-// const LotteryResult = lazy(() => import("./pages/lottryresult"));
+const UserComponent = lazy(() => import("./pages/UserComponent"));
 const Profile = lazy(() => import("./pages/profile"));
 const Login = lazy(() => import("./pages/login"));
 const Register = lazy(() => import("./pages/registration"));
 const Victory = lazy(() => import("./pages/victory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Payment = lazy(() => import("./pages/Payment"));
+const ManualBettingPage = lazy(() => import("./pages/manualbatting"));
+const Withdraw = lazy(() => import("./pages/withdraw"));
+const WagerDetails = lazy(() => import("./pages/WagerDetails"));
+const About = lazy(() => import("./pages/about"));
+
 const Users = lazy(() => import("./pages/admin/users"));
 const UpiIds = lazy(() => import("./pages/admin/upiIds"));
-const ManualBettingPage = lazy(() => import("./pages/manualbatting"));
 const AdminHome = lazy(() => import("./pages/admin/adminHome"));
-// const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
-const Withdraw = lazy(() => import("./pages/withdraw"));
-const About = lazy(() => import("./pages/about"));
+const Lottrystart = lazy(() => import("./pages/admin/lottrystart"));
 
 const App = () => {
   const { user, loading } = useSelector(
@@ -102,7 +98,7 @@ const App = () => {
           >
             <Route path="/admin" element={<AdminHome />} />
             <Route path="/admin/users" element={<Users />} />
-            <Route path="/admin/lottrystart" element={<AdminComponent />} />
+            <Route path="/admin/lottrystart" element={<Lottrystart />} />
             <Route path="/admin/upi" element={<UpiIds />} />
           </Route>
 

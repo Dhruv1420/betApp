@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import io, { Socket } from 'socket.io-client';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { server } from '../../contants/keys';
+import { useState, useEffect } from "react";
+import io, { Socket } from "socket.io-client";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { server } from "../../contants/keys";
 
 type GeneratedNumber = {
   generatedNumber: number;
@@ -14,125 +14,145 @@ type Bet = {
   _id: string;
   number: number;
   amount: number;
-  status: 'active' | 'completed';
+  status: "active" | "completed";
   generatedNumbers: GeneratedNumber[];
   createdAt: string;
   updatedAt: string;
 };
 
 type BetStartedEvent = { betId: string };
-type NewGeneratedNumberEvent = { betId: string; generatedNumber: number; updatedAmount: string };
-type BetStoppedEvent = { betId: string; lastGeneratedNumber: number; finalAmount: string };
+type NewGeneratedNumberEvent = {
+  betId: string;
+  generatedNumber: number;
+  updatedAmount: string;
+};
+type BetStoppedEvent = {
+  betId: string;
+  lastGeneratedNumber: number;
+  finalAmount: string;
+};
 type ErrorEvent = { message: string };
 
 const socket: Socket = io(`${server}`);
 
 export default function AdminComponent() {
-  const [number, setNumber] = useState<string>('');
-  const [amount, setAmount] = useState<string>('');
+  const [number, setNumber] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
   const [bets, setBets] = useState<Bet[]>([]);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchBets = async () => {
       try {
         const response = await axios.get<Bet[]>(`${server}/api/v1/bets`, {
-          headers: { 'Accept': 'application/json' }
+          headers: { Accept: "application/json" },
         });
         if (Array.isArray(response.data)) {
           setBets(response.data);
         } else {
-          console.error('API did not return an array:', response.data);
-          setError('Failed to fetch bets: Invalid data format');
+          console.error("API did not return an array:", response.data);
+          setError("Failed to fetch bets: Invalid data format");
         }
       } catch (err) {
-        console.error('Error fetching bets:', err);
-        setError('Failed to fetch bets. Please check your API endpoint and server configuration.');
+        console.error("Error fetching bets:", err);
+        setError(
+          "Failed to fetch bets. Please check your API endpoint and server configuration."
+        );
       }
     };
 
     fetchBets();
 
-    socket.on('betStarted', (data: BetStartedEvent) => {
-      setBets(prevBets => [{
-        _id: data.betId,
-        number: parseInt(number),
-        amount: parseFloat(amount),
-        status: 'active',
-        generatedNumbers: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }, ...prevBets]);
-      setNumber('');
-      setAmount('');
-      setError('');
+    socket.on("betStarted", (data: BetStartedEvent) => {
+      setBets((prevBets) => [
+        {
+          _id: data.betId,
+          number: parseInt(number),
+          amount: parseFloat(amount),
+          status: "active",
+          generatedNumbers: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        ...prevBets,
+      ]);
+      setNumber("");
+      setAmount("");
+      setError("");
     });
 
-    socket.on('newGeneratedNumber', (data: NewGeneratedNumberEvent) => {
-      setBets(prevBets => prevBets.map(bet => {
-        if (bet._id === data.betId) {
-          return {
-            ...bet,
-            generatedNumbers: [
-              ...bet.generatedNumbers,
-              { 
-                generatedNumber: data.generatedNumber, 
-                updatedAmount: parseFloat(data.updatedAmount),
-                timestamp: new Date().toISOString()
-              }
-            ]
-          };
-        }
-        return bet;
-      }));
+    socket.on("newGeneratedNumber", (data: NewGeneratedNumberEvent) => {
+      setBets((prevBets) =>
+        prevBets.map((bet) => {
+          if (bet._id === data.betId) {
+            return {
+              ...bet,
+              generatedNumbers: [
+                ...bet.generatedNumbers,
+                {
+                  generatedNumber: data.generatedNumber,
+                  updatedAmount: parseFloat(data.updatedAmount),
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            };
+          }
+          return bet;
+        })
+      );
     });
 
-    socket.on('betStopped', (data: BetStoppedEvent) => {
-      setBets(prevBets => prevBets.map(bet => {
-        if (bet._id === data.betId) {
-          return {
-            ...bet,
-            status: 'completed',
-            generatedNumbers: [
-              ...bet.generatedNumbers,
-              { 
-                generatedNumber: data.lastGeneratedNumber, 
-                updatedAmount: parseFloat(data.finalAmount),
-                timestamp: new Date().toISOString()
-              }
-            ]
-          };
-        }
-        return bet;
-      }));
+    socket.on("betStopped", (data: BetStoppedEvent) => {
+      setBets((prevBets) =>
+        prevBets.map((bet) => {
+          if (bet._id === data.betId) {
+            return {
+              ...bet,
+              status: "completed",
+              generatedNumbers: [
+                ...bet.generatedNumbers,
+                {
+                  generatedNumber: data.lastGeneratedNumber,
+                  updatedAmount: parseFloat(data.finalAmount),
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            };
+          }
+          return bet;
+        })
+      );
     });
 
-    socket.on('error', (data: ErrorEvent) => {
+    socket.on("error", (data: ErrorEvent) => {
       setError(data.message);
     });
 
     return () => {
-      socket.off('betStarted');
-      socket.off('newGeneratedNumber');
-      socket.off('betStopped');
-      socket.off('error');
+      socket.off("betStarted");
+      socket.off("newGeneratedNumber");
+      socket.off("betStopped");
+      socket.off("error");
     };
   }, [number, amount]);
 
   const handleStartBet = () => {
     if (number && amount) {
-      socket.emit('startBet', { number: parseInt(number), amount: parseFloat(amount) });
+      socket.emit("startBet", {
+        number: parseInt(number),
+        amount: parseFloat(amount),
+      });
     } else {
-      setError('Please enter both number and amount');
+      setError("Please enter both number and amount");
     }
   };
 
   const handleStopBet = (betId: string) => {
-    socket.emit('stopBet', { betId });
+    socket.emit("stopBet", { betId });
   };
 
   if (error) {
-   toast.error(error)
+    toast.error(error);
   }
 
   return (
@@ -169,14 +189,18 @@ export default function AdminComponent() {
             <p className="mb-2">Initial Amount: ${bet.amount.toFixed(2)}</p>
             <h4 className="text-lg font-medium mb-2">Generated Numbers:</h4>
             <div style={{ maxHeight: "500px", overflowY: "scroll" }}>
-            <ul className="list-disc pl-5">
-              {bet.generatedNumbers.map((gen, index) => (
-                <li key={index} className="mb-2">
-                  <span className="font-medium">Number: {gen.generatedNumber}</span>
-                  <span className="ml-4">Amount: ${gen.updatedAmount.toFixed(2)}</span>
-                </li>
-              ))}
-            </ul>
+              <ul className="list-disc pl-5">
+                {bet.generatedNumbers.map((gen, index) => (
+                  <li key={index} className="mb-2">
+                    <span className="font-medium">
+                      Number: {gen.generatedNumber}
+                    </span>
+                    <span className="ml-4">
+                      Amount: ${gen.updatedAmount.toFixed(2)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <button
               onClick={() => handleStopBet(bet._id)}

@@ -1,38 +1,26 @@
-import { useCallback, useEffect, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { io, Socket } from "socket.io-client";
 import { server } from "../../contants/keys";
 import { betClose, betOpen } from "../../redux/reducer/betReducer";
+import { GeneratedNumber } from "../../types/types";
 
-interface ServerToClientEvents {
-  betStarted: (data: { betId: string; message: string }) => void;
-  betUpdate: (data: {
-    betId: string;
-    generatedNumber: number;
-    updatedAmount: string;
-  }) => void;
-  betEnded: (data: { betId: string }) => void;
-  betStopped: (data: {
-    betId: string;
-    lastGeneratedNumber: number;
-    finalAmount: string;
-  }) => void;
-  betStopScheduled: (data: { betId: string; message: string }) => void;
-  error: (data: { message: string }) => void;
-}
+type Bet = {
+  _id: string;
+  number: number;
+  amount: number;
+  status: string;
+  generatedNumbers: GeneratedNumber[];
+};
 
-interface ClientToServerEvents {
-  startBet: (data: { number: number; amount: number }) => void;
-  stopBet: (data: { betId: string }) => void;
-}
+const socket: Socket = io(`${server}`);
 
 const AdminBettingInterface = () => {
-  const [socket, setSocket] = useState<Socket<
-    ServerToClientEvents,
-    ClientToServerEvents
-  > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [bets, setBets] = useState<Bet[]>([]);
   const [number, setNumber] = useState<number>(0);
   const [amount, setAmount] = useState<number>(0);
   const [activeBetId, setActiveBetId] = useState<string | null>(null);
@@ -42,50 +30,106 @@ const AdminBettingInterface = () => {
 
   const dispatch = useDispatch();
 
-  const connectSocket = useCallback(() => {
-    const newSocket = io(server, {
-      path: "/socket.io/",
-      transports: ["websocket"],
-    });
+  useEffect(() => {
+    const fetchBets = async () => {
+      try {
+        const response = await axios.get<Bet[]>(`${server}/api/v1/bet/bets`, {
+          withCredentials: true,
+        });
+        if (response.data) {
+          setBets(response.data);
+        }
+      } catch (err) {
+        console.error("Error fetching bets:", err);
+        toast.error(
+          "Failed to fetch bets. Please check your API endpoint and server configuration."
+        );
+      }
+    };
 
-    newSocket.on("connect", () => {
+    fetchBets();
+
+    socket.on("connect", () => {
       setIsConnected(true);
       toast.success("Connected to server");
     });
 
-    newSocket.on("disconnect", () => {
+    socket.on("disconnect", () => {
       setIsConnected(false);
       toast.error("Disconnected from server");
     });
 
-    newSocket.on("error", (error) => {
+    socket.on("error", (error) => {
       toast.error(error.message);
     });
 
-    newSocket.on("betStarted", (data) => {
+    socket.on("betStarted", (data) => {
+      setBets((prevBets) => [
+        {
+          _id: data.betId,
+          number,
+          amount,
+          status: "active",
+          generatedNumbers: [],
+        },
+        ...prevBets,
+      ]);
+      setNumber(0);
+      setAmount(0);
       setActiveBetId(data.betId);
       dispatch(betOpen());
       toast.success(data.message);
     });
 
-    newSocket.on("betUpdate", (data) => {
+    socket.on("newGeneratedNumber", (data) => {
+      setBets((prevBets) =>
+        prevBets.map((bet) => {
+          if (bet._id === data.betId) {
+            return {
+              ...bet,
+              generatedNumbers: [
+                ...bet.generatedNumbers,
+                {
+                  generatedNumber: data.generatedNumber,
+                  updatedAmount: parseFloat(data.updatedAmount),
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            };
+          }
+          return bet;
+        })
+      );
       setGeneratedNumbers((prev) => [
         ...prev,
         { number: data.generatedNumber, amount: data.updatedAmount },
       ]);
     });
 
-    newSocket.on("betEnded", () => {
-      setActiveBetId(null);
-      dispatch(betClose());
-      toast.success("Bet ended");
-    });
-
-    newSocket.on("betStopScheduled", (data) => {
+    socket.on("betStopScheduled", (data) => {
       toast.success(data.message);
     });
 
-    newSocket.on("betStopped", (data) => {
+    socket.on("betStopped", (data) => {
+      setBets((prevBets) =>
+        prevBets.map((bet) => {
+          if (bet._id === data.betId) {
+            return {
+              ...bet,
+              status: "inactive",
+              generatedNumbers: [
+                ...bet.generatedNumbers,
+                {
+                  generatedNumber: data.lastGeneratedNumber,
+                  updatedAmount: parseFloat(data.finalAmount),
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            };
+          }
+          return bet;
+        })
+      );
       setActiveBetId(null);
       dispatch(betClose());
       setGeneratedNumbers((prev) => [
@@ -95,21 +139,18 @@ const AdminBettingInterface = () => {
       toast.success(`Bet stopped. Final amount: ${data.finalAmount}`);
     });
 
-    setSocket(newSocket);
-
     return () => {
-      newSocket.disconnect();
+      socket.off("betStarted");
+      socket.off("newGeneratedNumber");
+      socket.off("betStopped");
+      socket.off("betStopScheduled");
+      socket.off("error");
     };
-  }, [dispatch]);
-
-  useEffect(() => {
-    connectSocket();
-  }, [connectSocket]);
+  }, []);
 
   const handleStartBet = () => {
     if (socket && isConnected) {
       socket.emit("startBet", { number, amount });
-      toast.success("Bet Started");
       dispatch(betOpen());
     } else {
       toast.error("Not connected to server");
@@ -119,7 +160,6 @@ const AdminBettingInterface = () => {
   const handleStopBet = () => {
     if (socket && isConnected && activeBetId) {
       socket.emit("stopBet", { betId: activeBetId });
-      toast.success("Bet will end after next cycle");
       dispatch(betClose());
     } else {
       toast.error("No active bet to stop");
@@ -202,8 +242,21 @@ const AdminBettingInterface = () => {
           </button>
         </div>
 
+        {bets.length > 0 ? (
+          bets.map((bet) => (
+            <div key={bet._id} className="mb-8 p-4 border rounded-lg">
+              <h3 className="text-xl font-semibold mb-2">Bet #{bet._id}</h3>
+              <p className="mb-2">Status: {bet.status}</p>
+              <p className="mb-2">Initial Number: {bet.number}</p>
+              <p className="mb-2">Initial Amount: ${bet.amount.toFixed(2)}</p>
+            </div>
+          ))
+        ) : (
+          <p>No bets available at the moment.</p>
+        )}
+
         <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-2">Generated Numbers</h2>
+          <h2 className="text-lg font-semibold mb-2">Generated Numbers:</h2>
           <div className="space-y-2">
             {generatedNumbers.map((gen, index) => (
               <div
