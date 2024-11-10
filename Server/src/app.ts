@@ -121,6 +121,7 @@ const generateLotteryNumber = (generatedNumber: number): number[] => {
 };
 
 let isAdminControlled = false;
+let periodCounter = 100000;
 
 const startContinuousInterval = () => {
   let currentAmount = 0;
@@ -133,6 +134,7 @@ const startContinuousInterval = () => {
       activeBetId = null;
     }
 
+    periodCounter++;
     const randomNum = generateRandomNumber(1);
     const lotteryNumber = generateLotteryNumber(randomNum);
 
@@ -140,7 +142,7 @@ const startContinuousInterval = () => {
       if (entry.number === randomNum) {
         return {
           ...entry,
-          period: entry.period + 1,
+          period: periodCounter,
           empty: 0,
           amount: currentAmount,
         };
@@ -154,6 +156,7 @@ const startContinuousInterval = () => {
 
     io.emit("newGeneratedNumber", {
       betStatus: isAdminControlled ? "active" : "inactive",
+      adminNumber: "-",
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2),
       lotteryNumber,
@@ -178,7 +181,7 @@ const startContinuousInterval = () => {
 const continuousIntervalId = startContinuousInterval();
 
 const startBetInterval = async (bet: any) => {
-  tableData = initializeTable();
+  // tableData = initializeTable();
   let currentAmount = isAdminControlled ? bet.amount : 0;
   const increasePercentage = getIncreasePercentage(bet.number);
 
@@ -201,7 +204,7 @@ const startBetInterval = async (bet: any) => {
           if (entry.number === bet.number) {
             return {
               ...entry,
-              period: entry.period + 1,
+              period: periodCounter,
               empty: 0,
               amount: finalAmount,
             };
@@ -271,7 +274,7 @@ const startBetInterval = async (bet: any) => {
       if (entry.number === randomNum) {
         return {
           ...entry,
-          period: entry.period + 1,
+          period: periodCounter,
           empty: 0,
           amount: currentAmount,
         };
@@ -308,6 +311,7 @@ const startBetInterval = async (bet: any) => {
 
     io.emit("newGeneratedNumber", {
       betId: bet._id,
+      adminNumber: bet.number,
       betStatus: isAdminControlled ? "active" : "inactive",
       generatedNumber: randomNum,
       updatedAmount: currentAmount.toFixed(2),
@@ -341,7 +345,7 @@ io.on("connection", (socket: Socket) => {
       else {
         clearInterval(continuousIntervalId);
 
-        tableData = initializeTable();
+        // tableData = initializeTable();
         const bet = await Bet.create({ number, amount, status: "active" });
         isAdminControlled = true;
 

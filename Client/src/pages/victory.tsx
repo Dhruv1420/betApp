@@ -25,7 +25,7 @@ const App = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const [tableData, setTableData] = useState<TableData[]>([]);
-  const [betStatuss, setBetStatuss] = useState<string>("inactive");
+  // const [betStatuss, setBetStatuss] = useState<string>("inactive");
   const [bet, setBet] = useState<{ number: number; amount: string }>();
 
   const dispatch = useDispatch();
@@ -37,8 +37,9 @@ const App = () => {
         const { data } = await axios.get(`${server}/api/v1/bet/victory`, {
           withCredentials: true,
         });
+
         setTableData(data.data);
-        setBetStatuss(data.betStatus);
+        // setBetStatuss(data.betStatus);
       } catch (error) {
         console.log(error);
         toast.error("Failed to load table data");
@@ -62,23 +63,25 @@ const App = () => {
     });
 
     socket.on("betStarted", (data) => {
-      setBetStatuss(data.betStatus);
+      // setBetStatuss(data.betStatus);
+      toast.success(data.message);
     });
 
     socket.on("newGeneratedNumber", (data) => {
       setBet({ number: data.generatedNumber, amount: data.updatedAmount });
       if (user && user.status === "active") {
         const newBalance = user.coins - Number(data.updatedAmount);
-        dispatch(updateUser({ status: "active", coins: newBalance }));
+        updateUserBalance(newBalance);
       }
-      setBetStatuss(data.betStatus);
+      // setBetStatuss(data.betStatus);
       setTableData(data.tableData);
     });
 
     socket.on("betStopped", (data) => {
       setBet({ number: data.lastGeneratedNumber, amount: data.finalAmount });
       setTableData(data.tableData);
-      setBetStatuss(data.betStatus);
+      updateUserStatus("inactive");
+      // setBetStatuss(data.betStatus);
     });
 
     return () => {
@@ -91,7 +94,7 @@ const App = () => {
     };
   }, []);
 
-  const updateUserStatus = (status: string, coins?: number) => {
+  const updateUserStatus = (status: string) => {
     setTableData((prevData) =>
       prevData?.map((row) => ({
         ...row,
@@ -99,15 +102,23 @@ const App = () => {
       }))
     );
 
-    if (coins) {
-      dispatch(updateUser({ status, coins }));
-    } else {
-      dispatch(updateUser({ status }));
-    }
+    const user = JSON.parse(localStorage.getItem("user")!);
+    user.status = status;
+    localStorage.setItem("user", JSON.stringify(user));
+
+    dispatch(updateUser({ status }));
+  };
+
+  const updateUserBalance = (coins: number) => {
+    const user = JSON.parse(localStorage.getItem("user")!);
+    user.coins = coins;
+    localStorage.setItem("user", JSON.stringify(user));
+
+    dispatch(updateUser({ coins }));
   };
 
   const startBetting = () => {
-    if (betStatuss === "inactive") return toast.error("Bet not started yet");
+    // if (betStatuss === "inactive") return toast.error("Bet not started yet");
     if (user) {
       if (Number(bet?.amount) > user.coins)
         return toast.error("Insufficient coins to start a bet");
@@ -123,7 +134,7 @@ const App = () => {
   };
 
   const stopBetting = () => {
-    if (betStatuss === "inactive") return toast.error("Bet not started yet");
+    // if (betStatuss === "inactive") return toast.error("Bet not started yet");
     if (user) {
       if (user.status === "inactive")
         return toast.error("You are already inactive");

@@ -24,9 +24,6 @@ const AdminBettingInterface = () => {
   const [number, setNumber] = useState<number>(0);
   const [amount, setAmount] = useState<number>(0);
   const [activeBetId, setActiveBetId] = useState<string | null>(null);
-  const [generatedNumbers, setGeneratedNumbers] = useState<
-    Array<{ number: number; amount: string }>
-  >([]);
 
   const dispatch = useDispatch();
 
@@ -100,11 +97,7 @@ const AdminBettingInterface = () => {
           return bet;
         })
       );
-      setActiveBetId(data.betId);
-      setGeneratedNumbers((prev) => [
-        ...prev,
-        { number: data.generatedNumber, amount: data.updatedAmount },
-      ]);
+      if (data.betId) setActiveBetId(data.betId);
     });
 
     socket.on("betStopScheduled", (data) => {
@@ -133,10 +126,6 @@ const AdminBettingInterface = () => {
       );
       setActiveBetId(null);
       dispatch(betClose());
-      setGeneratedNumbers((prev) => [
-        ...prev,
-        { number: data.lastGeneratedNumber, amount: data.finalAmount },
-      ]);
       toast.success(`Bet stopped. Final amount: ${data.finalAmount}`);
     });
 
@@ -256,7 +245,7 @@ const AdminBettingInterface = () => {
           <p>No bets available at the moment.</p>
         )}
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <h2 className="text-lg font-semibold mb-2">Generated Numbers:</h2>
           <div className="space-y-2">
             {generatedNumbers.map((gen, index) => (
@@ -269,7 +258,7 @@ const AdminBettingInterface = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

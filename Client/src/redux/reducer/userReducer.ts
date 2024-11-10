@@ -25,7 +25,9 @@ export const userReducer = createSlice({
         if (action.payload.coins) {
           state.user.coins = action.payload.coins;
         }
-        state.user.status = action.payload.status;
+        if (action.payload.status) {
+          state.user.status = action.payload.status;
+        }
       }
     },
   },

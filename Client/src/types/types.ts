@@ -30,7 +30,7 @@ export type User = {
 };
 
 export interface updateUserReal {
-  status: string;
+  status?: string;
   coins?: number;
 }
 

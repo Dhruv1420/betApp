@@ -11,6 +11,7 @@ import { RootState } from "../redux/store";
 const socket = io(`${server}`);
 
 export interface BetDetails {
+  adminNumber: string;
   amount: string;
   number: number;
   status: string;
@@ -29,7 +30,7 @@ const WagerDetails = () => {
         const { data } = await axios.get(`${server}/api/v1/bet/wagerdetails`, {
           withCredentials: true,
         });
-
+        console.log(data);
         if (data) {
           setBets(data);
         } else {
@@ -45,6 +46,7 @@ const WagerDetails = () => {
 
     socket.on("newGeneratedNumber", (data) => {
       const details: BetDetails = {
+        adminNumber: data.adminNumber || "-",
         amount: data.updatedAmount,
         number: data.generatedNumber,
         status: "Lose",
@@ -59,6 +61,7 @@ const WagerDetails = () => {
       const status = data.userIds.includes(user?._id) ? "Won" : "Lose";
       const profit = status === "Won" ? data.profit : 0;
       const details: BetDetails = {
+        adminNumber: data.adminNumber || "-",
         amount: data.finalAmount,
         number: data.lastGeneratedNumber,
         status,

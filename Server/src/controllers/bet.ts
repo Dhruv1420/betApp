@@ -54,9 +54,11 @@ export const manualBetting = TryCatch(async (req, res, next) => {
 
 export const getWagerDetails = TryCatch(async (req, res, next) => {
   const generatedBets = await GeneratedBet.find().sort({ timestamp: -1 });
+  const data = await Bet.findOne({ status: "active" }).sort({ timestamp: -1 });
 
   const results = generatedBets.map((bet) => {
     return {
+      adminNumber: data?.number || "-",
       amount: bet.updatedAmount.toFixed(2),
       number: bet.generatedNumber,
       status: bet.profit > 0 ? "Win" : "Loss",

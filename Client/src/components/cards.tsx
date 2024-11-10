@@ -5,11 +5,17 @@ const BetCard = ({ bet }: { bet: BetDetails }) => {
     <div className="bg-white rounded-lg shadow-lg p-4 border space-y-2">
       <div className="flex justify-between">
         <span className="text-gray-600">Bet Time:</span>
-        <span className="font-semibold">{new Date(bet.time).toLocaleString()}</span>
+        <span className="font-semibold">
+          {new Date(bet.time).toLocaleString()}
+        </span>
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Amount:</span>
         <span className="font-semibold">{bet.amount}</span>
+      </div>
+      <div className="flex justify-between">
+        <span className="text-gray-600">Victory Number:</span>
+        <span className="font-semibold">{bet.adminNumber}</span>
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Selected Number:</span>
