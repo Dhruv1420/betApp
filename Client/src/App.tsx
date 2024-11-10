@@ -1,11 +1,9 @@
 // App.tsx
-import axios from "axios";
 import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Loader from "./components/Loader";
-import { server } from "./contants/keys";
 import { userExist, userNotExist } from "./redux/reducer/userReducer";
 import { RootState } from "./redux/store";
 
@@ -39,14 +37,16 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    axios
-      .get(`${server}/api/v1/user/me`, { withCredentials: true })
-      .then(({ data }) => dispatch(userExist(data.user)))
-      .catch(() => dispatch(userNotExist()));
+    // axios
+    //   .get(`${server}/api/v1/user/me`, { withCredentials: true })
+    //   .then(({ data }) => dispatch(userExist(data.user)))
+    //   .catch(() => dispatch(userNotExist()));
 
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       dispatch(userExist(JSON.parse(savedUser)));
+    } else {
+      dispatch(userNotExist());
     }
   }, [dispatch]);
 

@@ -295,7 +295,8 @@ const Customers = () => {
     rows,
     "dashboardProductBox",
     "All Users",
-    rows.length > 50
+    rows.length > 50,
+    50
   )();
 
   return (

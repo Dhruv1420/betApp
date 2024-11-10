@@ -42,11 +42,11 @@ const WagerDetails = () => {
           };
           setBets((prevBets) => [newBet, ...prevBets]);
         } else {
-          toast.error("Error in processing bet");
+          toast.error("Error in accesing bet details");
         }
       } catch (error) {
-        toast.error("Failed to place bet");
-        console.error("Error placing bet:", error);
+        toast.error("Failed to get wager details");
+        console.error("Error: ", error);
       }
     };
 

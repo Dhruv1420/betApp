@@ -15,14 +15,15 @@ import {
     data: T[],
     containerClassname: string,
     heading: string,
-    showPagination: boolean = false
+    showPagination: boolean = false,
+    pageSize: number
   ) {
     return function HOC() {
       const options: TableOptions<T> = {
         columns,
         data,
         initialState: {
-          pageSize: 4,
+          pageSize: pageSize || 4,
         },
       };
       const {
