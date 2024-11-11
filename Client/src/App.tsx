@@ -4,9 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Loader from "./components/Loader";
 import { userExist, userNotExist } from "./redux/reducer/userReducer";
-import { RootState } from "./redux/store";
+import { RootState, server } from "./redux/store";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import axios from "axios";
 
 const Home = lazy(() => import("./pages/Home"));
 const UserComponent = lazy(() => import("./pages/UserComponent"));
@@ -33,17 +34,21 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // axios
-    //   .get(`${server}/api/v1/user/me`, { withCredentials: true })
-    //   .then(({ data }) => dispatch(userExist(data.user)))
-    //   .catch(() => dispatch(userNotExist()));
+    const fetchUser = () => {
+      axios
+        .get(`${server}/api/v1/user/me`, { withCredentials: true })
+        .then(({ data }) => {
+          dispatch(userExist(data.user));
+          localStorage.setItem("user", JSON.stringify(data.user));
+        })
+        .catch(() => dispatch(userNotExist()));
+    };
 
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      dispatch(userExist(JSON.parse(savedUser)));
-    } else {
-      dispatch(userNotExist());
-    }
+    fetchUser();
+
+    const interval = setInterval(fetchUser, 30000);
+
+    return () => clearInterval(interval);
   }, [dispatch]);
 
   return loading ? (

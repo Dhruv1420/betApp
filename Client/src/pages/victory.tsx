@@ -102,18 +102,12 @@ const App = () => {
       }))
     );
 
-    const user = JSON.parse(localStorage.getItem("user")!);
-    user.status = status;
-    localStorage.setItem("user", JSON.stringify(user));
-
+    localStorage.setItem("user", JSON.stringify({ ...user, status }));
     dispatch(updateUser({ status }));
   };
 
   const updateUserBalance = (coins: number) => {
-    const user = JSON.parse(localStorage.getItem("user")!);
-    user.coins = coins;
-    localStorage.setItem("user", JSON.stringify(user));
-
+    localStorage.setItem("user", JSON.stringify({ ...user, coins }));
     dispatch(updateUser({ coins }));
   };
 

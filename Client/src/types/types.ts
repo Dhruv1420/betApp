@@ -34,6 +34,13 @@ export interface updateUserReal {
   coins?: number;
 }
 
+export interface ManualBet {
+  number: number;
+  amount: number;
+  userId: string;
+  status: string;
+}
+
 export interface GeneratedNumber {
   generatedNumber: number;
   updatedAmount: number;

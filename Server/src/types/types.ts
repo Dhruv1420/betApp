@@ -13,11 +13,10 @@ export interface AuthRequest extends Request {
   user?: string;
 }
 
-
 export type ControllerType<
-  Params = Record<string, any>, 
-  ResBody = any, 
-  ReqBody = any, 
+  Params = Record<string, any>,
+  ResBody = any,
+  ReqBody = any,
   ReqQuery = Record<string, any>
 > = (
   req: Request<Params, ResBody, ReqBody, ReqQuery>,

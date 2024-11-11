@@ -22,14 +22,24 @@ import { server } from "../contants/keys";
 import { useDispatch } from "react-redux";
 import { userNotExist } from "../redux/reducer/userReducer";
 import toast from "react-hot-toast";
+import { useGetManualBetsQuery } from "../redux/api/betAPI";
+import { CustomError } from "../types/apiTypes";
+import Loader from "../components/Loader";
 
 const Profile = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
+
   const [openProfile, setOpenProfile] = useState(false);
   const [openDeposit, setOpenDeposit] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
+  const [openManual, setOpenManual] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { data, isLoading, isError, error } = useGetManualBetsQuery(
+    user?._id as string
+  );
 
   const handleOpenProfile = () => setOpenProfile(true);
   const handleCloseProfile = () => setOpenProfile(false);
@@ -39,9 +49,11 @@ const Profile = () => {
 
   const handleOpenWithdraw = () => setOpenWithdraw(true);
   const handleCloseWithdraw = () => setOpenWithdraw(false);
-  const handleAboutUsClick = () => {
-    navigate("/about"); // Adjust the path based on your routing setup
-  };
+
+  const handleOpenManual = () => setOpenManual(true);
+  const handleCloseManual = () => setOpenManual(false);
+
+  const handleAboutUsClick = () => navigate("/about");
 
   const logoutHandler = async () => {
     try {
@@ -63,6 +75,11 @@ const Profile = () => {
       }
     }
   };
+
+  if (isError) {
+    const err = error as CustomError;
+    toast.error(err.data.message);
+  }
 
   return (
     <div>
@@ -137,6 +154,7 @@ const Profile = () => {
         >
           <ListItemText primary="Profile" />
         </ListItem>
+
         <ListItem
           component="button"
           onClick={handleOpenDeposit}
@@ -144,6 +162,7 @@ const Profile = () => {
         >
           <ListItemText primary="Deposit Record" />
         </ListItem>
+
         <ListItem
           component="button"
           onClick={handleOpenWithdraw}
@@ -151,6 +170,15 @@ const Profile = () => {
         >
           <ListItemText primary="Withdrawal Record" />
         </ListItem>
+
+        <ListItem
+          component="button"
+          onClick={handleOpenManual}
+          sx={{ cursor: "pointer" }}
+        >
+          <ListItemText primary="Manual Bet Record" />
+        </ListItem>
+
         <ListItem
           component="button"
           sx={{ cursor: "pointer" }}
@@ -282,6 +310,63 @@ const Profile = () => {
             ))}
           </List>
         </DialogContent>
+      </Dialog>
+
+      {/* Manual Bet Record Dialog */}
+      <Dialog
+        open={openManual}
+        onClose={handleCloseManual}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
+          <DialogTitle>Manual Bet Record</DialogTitle>
+          <IconButton onClick={handleCloseManual} edge="end">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <DialogContent dividers>
+            <List>
+              {data?.manualBets?.map((record, index) => (
+                <ListItem key={index} divider>
+                  <ListItemText
+                    primary={`Number: ${record.number}`}
+                    secondary={
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>Amount: {record.amount}</span>
+                        <span>
+                          Status:{" "}
+                          <span
+                            style={{
+                              color:
+                                record.status === "pending" ? "red" : "green",
+                            }}
+                          >
+                            {record.status}
+                          </span>
+                        </span>
+                      </div>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </DialogContent>
+        )}
       </Dialog>
 
       {/* Bottom Navigation */}

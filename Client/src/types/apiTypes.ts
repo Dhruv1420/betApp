@@ -1,4 +1,4 @@
-import { User } from "./types";
+import { ManualBet, User } from "./types";
 
 export type CustomError = {
   status: number;
@@ -64,6 +64,11 @@ export type BetResponse = {
   message: string;
   number: number;
   amount: number;
+};
+
+export type ManualBetResponse = {
+  success: boolean;
+  manualBets: ManualBet[];
 };
 
 export type BetType = {

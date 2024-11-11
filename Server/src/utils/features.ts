@@ -1,8 +1,10 @@
 import { Response } from "express";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { BET_APP_TOKEN, sumPairs } from "../constants/keys.js";
+import { ManualBet } from "../models/manualBet.js";
+import { User } from "../models/user.js";
 import { NewUserRequestBody } from "../types/types.js";
-import { BET_APP_TOKEN } from "../constants/keys.js";
 
 export const connectDB = (uri: string) => {
   mongoose
@@ -35,4 +37,73 @@ export const sendToken = (
     message,
     user,
   });
+};
+
+export const generateRandomNumber = (exclude: number): number => {
+  let num: number;
+  do {
+    num = Math.floor(Math.random() * (19 - 3 + 1)) + 3;
+  } while (num === exclude);
+  return num;
+};
+
+export const getIncreasePercentage = (userNum: number): number => {
+  if ([7, 8, 14, 15].includes(userNum)) return 0.09;
+  if ([5, 6, 16, 17].includes(userNum)) return 0.06;
+  if ([9, 10, 12, 13].includes(userNum)) return 0.12;
+  if (userNum === 11) return 0.15;
+  return 0.03;
+};
+
+export const getIncreaseTimesProfit = (userNum: number): number => {
+  if ([7, 8, 14, 15].includes(userNum)) return 15;
+  if ([5, 6, 16, 17].includes(userNum)) return 22.5;
+  if ([9, 10, 12, 13].includes(userNum)) return 11.25;
+  if (userNum === 11) return 9;
+  return 45;
+};
+
+export const generateLotteryNumber = (generatedNumber: number): number[] => {
+  const pairs = sumPairs[generatedNumber];
+  let [firstNum, secondNum] = pairs[Math.floor(Math.random() * pairs.length)];
+
+  if (Math.random() > 0.5) {
+    [firstNum, secondNum] = [secondNum, firstNum];
+  }
+
+  const lotteryNumber = [firstNum, secondNum];
+
+  for (let i = 0; i < 8; i++) {
+    const randomNum = Math.floor(Math.random() * 10) + 1;
+    lotteryNumber.push(randomNum);
+  }
+
+  return lotteryNumber;
+};
+
+export const processManualBets = async (randomNum: number) => {
+  const manualbets = await ManualBet.find({ status: "pending" });
+  await Promise.all(
+    manualbets.map(async (entry) => {
+      try {
+        const increaseAmount =
+          entry.amount * getIncreaseTimesProfit(entry.number);
+        const user = await User.findById(entry.userId);
+
+        if (user) {
+          if (entry.number === randomNum) {
+            user.coins += increaseAmount;
+          } else {
+            user.coins = Math.max(0, user.coins - entry.amount);
+          }
+          await user.save();
+        }
+
+        entry.status = "completed";
+        await entry.save();
+      } catch (error) {
+        console.error(`Error processing bet for user ${entry.userId}:`, error);
+      }
+    })
+  );
 };

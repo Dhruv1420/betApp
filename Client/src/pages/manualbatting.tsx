@@ -2,22 +2,19 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/Header";
 import Loader from "../components/Loader";
 import { server } from "../contants/keys";
 import { RootState } from "../redux/store";
 
 const ManualBettingPage = () => {
-  const navigate = useNavigate();
   const { user, loading } = useSelector(
     (state: RootState) => state.userReducer
   );
 
   const [betAmount, setBetAmount] = useState<number>(0);
   const [userNumber, setUserNumber] = useState<number>(3);
-  const [generatedNumber, setGeneratedNumber] = useState<number | null>(null);
-  const [result, setResult] = useState<string | null>(null);
+  const [flag, setFlag] = useState<boolean>(false);
 
   const handleBet = async () => {
     try {
@@ -31,14 +28,11 @@ const ManualBettingPage = () => {
         { withCredentials: true }
       );
 
+      setFlag(true);
+      setBetAmount(0);
+      setUserNumber(3);
       if (response.data) {
         toast.success(response.data.message);
-        setGeneratedNumber(response.data.randomNumber);
-        if (response.data.randomNumber === userNumber) {
-          setResult(`You won! Profit: ${response.data.profit}`);
-        } else {
-          setResult(`You lost! Loss: ${betAmount}`);
-        }
       } else {
         toast.error("Error in processing bet");
       }
@@ -47,11 +41,6 @@ const ManualBettingPage = () => {
       console.error("Error placing bet:", error);
     }
   };
-
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
 
   return loading ? (
     <Loader />
@@ -110,20 +99,18 @@ const ManualBettingPage = () => {
           />
         </div>
 
+        {flag && (
+          <div className="mt-2 text-green-500 text-sm italic">
+            *Bet placed successfully. Please wait for the result.
+          </div>
+        )}
+
         <button
           onClick={handleBet}
           className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
         >
           Place Bet
         </button>
-
-        {generatedNumber && (
-          <div className="mt-4">
-            <p className="text-lg">Winning Number: {generatedNumber}</p>
-            <p className="text-lg">Your Number: {userNumber}</p>
-            <p className="text-lg font-bold">{result}</p>
-          </div>
-        )}
       </div>
 
       {/* Bottom Navigation */}

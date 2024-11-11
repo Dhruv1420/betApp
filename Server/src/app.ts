@@ -5,12 +5,18 @@ import express from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import { corsOption } from "./constants/config.js";
-import { sumPairs } from "./constants/keys.js";
 import { errorMiddleware } from "./middlewares/error.js";
 import { Bet } from "./models/bet.js";
 import { GeneratedBet } from "./models/generatedBet.js";
 import { User } from "./models/user.js";
-import { connectDB } from "./utils/features.js";
+import {
+  connectDB,
+  generateLotteryNumber,
+  generateRandomNumber,
+  getIncreasePercentage,
+  getIncreaseTimesProfit,
+  processManualBets,
+} from "./utils/features.js";
 
 import betRoute from "./routes/bet.js";
 import paymentRoute from "./routes/payment.js";
@@ -77,49 +83,6 @@ const initializeTable = () => {
 };
 
 let tableData = initializeTable();
-
-const generateRandomNumber = (exclude: number): number => {
-  let num: number;
-  do {
-    num = Math.floor(Math.random() * (19 - 3 + 1)) + 3;
-  } while (num === exclude);
-  return num;
-};
-
-const getIncreasePercentage = (userNum: number): number => {
-  if ([7, 8, 14, 15].includes(userNum)) return 0.09;
-  if ([5, 6, 16, 17].includes(userNum)) return 0.06;
-  if ([9, 10, 12, 13].includes(userNum)) return 0.12;
-  if (userNum === 11) return 0.15;
-  return 0.03;
-};
-
-export const getIncreaseTimesProfit = (userNum: number): number => {
-  if ([7, 8, 14, 15].includes(userNum)) return 15;
-  if ([5, 6, 16, 17].includes(userNum)) return 22.5;
-  if ([9, 10, 12, 13].includes(userNum)) return 11.25;
-  if (userNum === 11) return 9;
-  return 45;
-};
-
-const generateLotteryNumber = (generatedNumber: number): number[] => {
-  const pairs = sumPairs[generatedNumber];
-  let [firstNum, secondNum] = pairs[Math.floor(Math.random() * pairs.length)];
-
-  if (Math.random() > 0.5) {
-    [firstNum, secondNum] = [secondNum, firstNum];
-  }
-
-  const lotteryNumber = [firstNum, secondNum];
-
-  for (let i = 0; i < 8; i++) {
-    const randomNum = Math.floor(Math.random() * 10) + 1;
-    lotteryNumber.push(randomNum);
-  }
-
-  return lotteryNumber;
-};
-
 let isAdminControlled = false;
 let periodCounter = 100000;
 
@@ -154,6 +117,8 @@ const startContinuousInterval = () => {
       }
     });
 
+    await processManualBets(randomNum);
+
     io.emit("newGeneratedNumber", {
       betStatus: isAdminControlled ? "active" : "inactive",
       adminNumber: "-",
@@ -181,7 +146,6 @@ const startContinuousInterval = () => {
 const continuousIntervalId = startContinuousInterval();
 
 const startBetInterval = async (bet: any) => {
-  // tableData = initializeTable();
   let currentAmount = isAdminControlled ? bet.amount : 0;
   const increasePercentage = getIncreasePercentage(bet.number);
 
@@ -216,8 +180,6 @@ const startBetInterval = async (bet: any) => {
           }
         });
 
-        const lotteryNumber = generateLotteryNumber(bet.number);
-
         await Bet.findByIdAndUpdate(bet._id, {
           amount: finalAmount,
           status: "completed",
@@ -229,8 +191,11 @@ const startBetInterval = async (bet: any) => {
           user.status = "inactive";
           await user.save();
         });
-
+        
         const userIds = users.map((user) => user._id);
+        const lotteryNumber = generateLotteryNumber(bet.number);
+
+        await processManualBets(bet.number);
 
         await GeneratedBet.create({
           betId: bet._id,
@@ -298,6 +263,8 @@ const startBetInterval = async (bet: any) => {
       }
       await user.save();
     });
+
+    await processManualBets(randomNum);
 
     await GeneratedBet.create({
       betId: bet._id,

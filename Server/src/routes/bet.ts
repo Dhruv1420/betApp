@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getBets,
+  getManualBets,
   getResults,
   getWagerDetails,
   manualBetting,
@@ -14,5 +15,6 @@ app.post("/manualbet", manualBetting);
 app.get("/wagerdetails", getWagerDetails);
 app.get("/bets", getBets);
 app.get("/results", getResults);
+app.get("/getmanualbets", getManualBets);
 
 export default app;

@@ -1,7 +1,7 @@
-import { getIncreaseTimesProfit } from "../app.js";
 import { TryCatch } from "../middlewares/error.js";
 import { Bet } from "../models/bet.js";
 import { GeneratedBet } from "../models/generatedBet.js";
+import { ManualBet } from "../models/manualBet.js";
 import { User } from "../models/user.js";
 import ErrorHandler from "../utils/utility-class.js";
 
@@ -33,22 +33,16 @@ export const manualBetting = TryCatch(async (req, res, next) => {
   if (amount > user.coins)
     return next(new ErrorHandler("Insufficient coins", 400));
 
-  const randomNumber = Math.floor(Math.random() * (19 - 3 + 1)) + 3;
-  let profit = 0;
-  if (randomNumber != number) {
-    user.coins -= amount;
-  } else {
-    const prod = getIncreaseTimesProfit(number);
-    user.coins += amount * prod;
-    profit = amount * prod;
-  }
-  await user.save();
+  const manualBet = await ManualBet.create({
+    userId: id,
+    amount,
+    number,
+  });
 
   return res.status(200).json({
     success: true,
-    message: "Bet successful",
-    profit,
-    randomNumber,
+    message: "Result will update automatically",
+    manualBet,
   });
 });
 
@@ -99,4 +93,13 @@ export const getResults = TryCatch(async (req, res, next) => {
   });
 
   return res.status(200).json(results);
+});
+
+export const getManualBets = TryCatch(async (req, res, next) => {
+  const { id } = req.query;
+  const manualBets = await ManualBet.find({ userId: id });
+  return res.status(200).json({
+    success: true,
+    manualBets,
+  });
 });

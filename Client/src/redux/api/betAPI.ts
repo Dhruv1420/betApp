@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BetResponse, BetType } from "../../types/apiTypes";
+import { BetResponse, BetType, ManualBetResponse } from "../../types/apiTypes";
 
 export const betAPI = createApi({
   reducerPath: "betApi",
@@ -16,7 +16,14 @@ export const betAPI = createApi({
       }),
       invalidatesTags: ["bets"],
     }),
+    getManualBets: builder.query<ManualBetResponse, string>({
+      query: (id) => ({
+        url: `getmanualbets?id=${id}`,
+        credentials: "include",
+      }),
+      providesTags: ["bets"],
+    }),
   }),
 });
 
-export const { useNewBetMutation } = betAPI;
+export const { useNewBetMutation, useGetManualBetsQuery } = betAPI;
