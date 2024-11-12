@@ -91,7 +91,8 @@ const UpiIds = () => {
     rows,
     "dashboardProductBox",
     "UPI IDs",
-    rows.length > 4
+    rows.length > 4,
+    4
   )();
 
   return (

@@ -18,7 +18,7 @@ const BetCard = ({ bet }: { bet: BetDetails }) => {
         <span className="font-semibold">{bet.adminNumber}</span>
       </div>
       <div className="flex justify-between">
-        <span className="text-gray-600">Selected Number:</span>
+        <span className="text-gray-600">Result:</span>
         <span className="font-semibold">{bet.number}</span>
       </div>
       <div className="flex justify-between">
