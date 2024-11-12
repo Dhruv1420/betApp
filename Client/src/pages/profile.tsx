@@ -347,7 +347,7 @@ const Profile = () => {
                           alignItems: "center",
                         }}
                       >
-                        <span>Amount: {record.amount}</span>
+                        <span>Amount: {record.amount.toFixed(2)}</span>
                         <span>
                           Status:{" "}
                           <span
@@ -359,6 +359,7 @@ const Profile = () => {
                             {record.status}
                           </span>
                         </span>
+                        <span>Profit: {record.profit.toFixed(2)}</span>
                       </div>
                     }
                   />

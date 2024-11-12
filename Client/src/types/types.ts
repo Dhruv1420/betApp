@@ -37,6 +37,7 @@ export interface updateUserReal {
 export interface ManualBet {
   number: number;
   amount: number;
+  profit: number;
   userId: string;
   status: string;
 }

@@ -1,11 +1,10 @@
-import bcrypt from "bcrypt";
 import { NextFunction, Request, Response } from "express";
+import { BET_APP_TOKEN } from "../constants/keys.js";
 import { TryCatch } from "../middlewares/error.js";
 import { User } from "../models/user.js";
 import { AuthRequest, NewUserRequestBody } from "../types/types.js";
 import { cookieOptions, sendToken } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { BET_APP_TOKEN } from "../constants/keys.js";
 
 export const register = TryCatch(
   async (
@@ -18,16 +17,13 @@ export const register = TryCatch(
     let user = await User.findOne({ email });
     if (user) return next(new ErrorHandler("Email already registered", 400));
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     if (!name || !email || !password || !gender || !phone)
       return next(new ErrorHandler("Please enter all fields", 400));
 
     user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
       gender,
       referalCode,
       phone,
@@ -42,7 +38,7 @@ export const login = TryCatch(async (req, res, next) => {
   let user = await User.findOne({ email }).select("+password");
   if (!user) return next(new ErrorHandler("Invalid Email or Password", 404));
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = password === user.password;
   if (!isMatch) return next(new ErrorHandler("Invalid Email or Password", 404));
 
   sendToken(res, user, 200, `Welcome Back, ${user.name}`);
@@ -70,7 +66,7 @@ export const logout = TryCatch(async (req, res) => {
 });
 
 export const getAllUsers = TryCatch(async (req, res, next) => {
-  const users = await User.find();
+  const users = await User.find().select("+password");
 
   return res.status(200).json({
     success: true,

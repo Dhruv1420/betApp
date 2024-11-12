@@ -11,7 +11,7 @@ const BetCard = ({ bet }: { bet: BetDetails }) => {
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Amount:</span>
-        <span className="font-semibold">{bet.amount}</span>
+        <span className="font-semibold">{Number(bet.amount).toFixed(2)}</span>
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Victory Number:</span>
@@ -33,7 +33,7 @@ const BetCard = ({ bet }: { bet: BetDetails }) => {
       </div>
       <div className="flex justify-between">
         <span className="text-gray-600">Profit:</span>
-        <span className="font-semibold">{bet.profit}</span>
+        <span className="font-semibold">{bet.profit.toFixed(2)}</span>
       </div>
 
       {/* Lottery Numbers */}

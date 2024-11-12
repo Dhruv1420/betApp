@@ -42,6 +42,8 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 interface DataType {
   _id: string;
   name: string;
+  password: string;
+  status: string;
   gender: string;
   phone: number;
   referralCode: string;
@@ -75,6 +77,14 @@ const columns: Column<DataType>[] = [
   {
     Header: "Name",
     accessor: "name",
+  },
+  {
+    Header: "Password",
+    accessor: "password",
+  },
+  {
+    Header: "Status",
+    accessor: "status",
   },
   {
     Header: "Gender",
@@ -247,6 +257,8 @@ const Customers = () => {
         data.users.map((i) => ({
           _id: i._id,
           name: i.name,
+          password: i.password,
+          status: i.status,
           gender: i.gender,
           phone: i.phone,
           referralCode:

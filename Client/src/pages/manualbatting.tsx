@@ -1,11 +1,17 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import BottomNav from "../components/Header";
 import Loader from "../components/Loader";
 import { server } from "../contants/keys";
 import { RootState } from "../redux/store";
+import { updateUser } from "../redux/reducer/userReducer";
+import { useDispatch } from "react-redux";
+import { io } from "socket.io-client";
+
+const socket = io(`${server}`);
 
 const ManualBettingPage = () => {
   const { user, loading } = useSelector(
@@ -15,6 +21,8 @@ const ManualBettingPage = () => {
   const [betAmount, setBetAmount] = useState<number>(0);
   const [userNumber, setUserNumber] = useState<number>(3);
   const [flag, setFlag] = useState<boolean>(false);
+
+  const dispatch = useDispatch();
 
   const handleBet = async () => {
     try {
@@ -42,6 +50,21 @@ const ManualBettingPage = () => {
     }
   };
 
+  const updateUserBalance = (coins: number) => {
+    localStorage.setItem("user", JSON.stringify({ ...user, coins }));
+    dispatch(updateUser({ coins }));
+  };
+
+  useEffect(() => {
+    socket.on("coinsUpdated", (newCoins) => {
+      updateUserBalance(newCoins);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return loading ? (
     <Loader />
   ) : (
@@ -55,7 +78,7 @@ const ManualBettingPage = () => {
                 Username: <span className="font-bold">{user?.name}</span>
               </p>
               <p className="text-lg">
-                Balance: <span className="font-bold">{user?.coins}</span>
+                Balance: <span className="font-bold">{user?.coins.toFixed(2)}</span>
               </p>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { BET_APP_TOKEN, sumPairs } from "../constants/keys.js";
 import { ManualBet } from "../models/manualBet.js";
 import { User } from "../models/user.js";
 import { NewUserRequestBody } from "../types/types.js";
+import { io } from "../app.js";
 
 export const connectDB = (uri: string) => {
   mongoose
@@ -93,10 +94,13 @@ export const processManualBets = async (randomNum: number) => {
         if (user) {
           if (entry.number === randomNum) {
             user.coins += increaseAmount;
+            entry.profit = increaseAmount;
           } else {
             user.coins = Math.max(0, user.coins - entry.amount);
+            entry.profit = -entry.amount;
           }
           await user.save();
+          io.to(user._id.toString()).emit("coinsUpdated", user.coins);
         }
 
         entry.status = "completed";

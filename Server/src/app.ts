@@ -36,7 +36,7 @@ connectDB(MONGO_URI);
 const app = express();
 const httpServer = createServer(app);
 
-const io = new Server(httpServer, {
+export const io = new Server(httpServer, {
   cors: {
     // origin: [
     //   "http://localhost:5173",
@@ -73,7 +73,7 @@ const initializeTable = () => {
   for (let i = 3; i <= 19; i++) {
     table.push({
       number: i,
-      period: 100000,
+      period: 21458627,
       empty: 0,
       amount: 0,
       status: "inactive",
@@ -84,7 +84,7 @@ const initializeTable = () => {
 
 let tableData = initializeTable();
 let isAdminControlled = false;
-let periodCounter = 100000;
+let periodCounter = 21458627;
 
 const startContinuousInterval = () => {
   let currentAmount = 0;
@@ -169,8 +169,7 @@ const startBetInterval = async (bet: any) => {
             return {
               ...entry,
               period: periodCounter,
-              empty: 0,
-              amount: finalAmount,
+              amount: 0,
             };
           } else {
             return {
