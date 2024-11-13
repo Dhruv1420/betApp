@@ -56,6 +56,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOption));
 
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
 // Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/payment", paymentRoute);
@@ -190,7 +194,7 @@ const startBetInterval = async (bet: any) => {
           user.status = "inactive";
           await user.save();
         });
-        
+
         const userIds = users.map((user) => user._id);
         const lotteryNumber = generateLotteryNumber(bet.number);
 
