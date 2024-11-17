@@ -14,13 +14,13 @@ import {
 import BottomNav from "../components/Header";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
 import { server } from "../contants/keys";
 import { useDispatch } from "react-redux";
-import { userNotExist } from "../redux/reducer/userReducer";
+import { userExist, userNotExist } from "../redux/reducer/userReducer";
 import toast from "react-hot-toast";
 import { useGetManualBetsQuery } from "../redux/api/betAPI";
 import { CustomError } from "../types/apiTypes";
@@ -75,6 +75,16 @@ const Profile = () => {
       }
     }
   };
+
+  useEffect(() => {
+    axios
+      .get(`${server}/api/v1/user/me`, { withCredentials: true })
+      .then(({ data }) => {
+        dispatch(userExist(data.user));
+        localStorage.setItem("user", JSON.stringify(data.user));
+      })
+      .catch((error) => console.log("An unknown error occurred:", error));
+  }, [dispatch]);
 
   if (isError) {
     const err = error as CustomError;

@@ -16,6 +16,7 @@ export interface BetDetails {
   number: number;
   status: string;
   profit: number;
+  userIds?: string[];
   lotteryNumbers: number[];
   time: number;
 }
@@ -30,9 +31,24 @@ const WagerDetails = () => {
         const { data } = await axios.get(`${server}/api/v1/bet/wagerdetails`, {
           withCredentials: true,
         });
-        console.log(data);
+        const newData: BetDetails[] = data.map((rot: BetDetails) => {
+          const userIds = rot.userIds;
+          let status = "Lose";
+          if (userIds && user) {
+            if (userIds.includes(user?._id)) status = "Won";
+          }
+          return {
+            adminNumber: rot.adminNumber,
+            amount: rot.amount,
+            number: rot.number,
+            status,
+            profit: status === "Won" ? rot.profit : 0,
+            lotteryNumbers: rot.lotteryNumbers,
+            time: rot.time,
+          };
+        });
         if (data) {
-          setBets(data);
+          setBets(newData);
         } else {
           toast.error("Error in accesing bet details");
         }
@@ -76,7 +92,7 @@ const WagerDetails = () => {
       socket.off("betStopped");
       socket.off("newGeneratedNumber");
     };
-  }, [user?._id]);
+  }, [user]);
 
   return (
     <>

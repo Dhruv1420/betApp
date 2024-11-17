@@ -224,10 +224,10 @@ const AdminBettingInterface = () => {
         {bets.length > 0 ? (
           bets.map((bet) => (
             <div key={bet._id} className="mb-8 p-4 border rounded-lg">
-              <h3 className="text-xl font-semibold mb-2">Bet #{bet._id}</h3>
+              <h3 className="text-xl font-semibold mb-2">Bet Id: {bet._id}</h3>
               <p className="mb-2">Status: {bet.status}</p>
               <p className="mb-2">Initial Number: {bet.number}</p>
-              <p className="mb-2">Initial Amount: ${bet.amount.toFixed(2)}</p>
+              <p className="mb-2">Amount: {bet.amount.toFixed(2)}</p>
               <button
                 onClick={() => handleStopBet(bet._id)}
                 disabled={!isConnected || bet.status === "completed"}

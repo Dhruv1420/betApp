@@ -38,6 +38,8 @@ import {
   useStatusChangeWithdrawMutation,
 } from "../../redux/api/paymnetAPI";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useDispatch } from "react-redux";
+import { updateUser } from "../../redux/reducer/userReducer";
 
 interface DataType {
   _id: string;
@@ -133,6 +135,8 @@ const Customers = () => {
   const [statusChange] = useStatusChangeMutation();
   const [withdrawStatus] = useStatusChangeWithdrawMutation();
 
+  const dispatch = useDispatch();
+
   // State to manage dialog visibility and coin input
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogPayment, setIsDialogPayment] = useState(false);
@@ -154,6 +158,8 @@ const Customers = () => {
     coins: number
   ) => {
     const res = await addCoins({ userId, adminUserId, coins });
+    localStorage.setItem("user", JSON.stringify({ ...user, coins }));
+    dispatch(updateUser({ coins }));
     responseToast(res, null, "");
   };
 

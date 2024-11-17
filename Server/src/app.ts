@@ -10,6 +10,7 @@ import { Bet } from "./models/bet.js";
 import { GeneratedBet } from "./models/generatedBet.js";
 import { User } from "./models/user.js";
 import {
+  calculateRemainingTime,
   connectDB,
   generateLotteryNumber,
   generateRandomNumber,
@@ -89,6 +90,7 @@ const initializeTable = () => {
 let tableData = initializeTable();
 let isAdminControlled = false;
 let periodCounter = 21458627;
+let betTime = 10;
 
 const startContinuousInterval = () => {
   let currentAmount = 0;
@@ -111,12 +113,13 @@ const startContinuousInterval = () => {
           ...entry,
           period: periodCounter,
           empty: 0,
-          amount: currentAmount,
+          amount: 0,
         };
       } else {
         return {
           ...entry,
           empty: entry.empty + 1,
+          amount: 0,
         };
       }
     });
@@ -142,12 +145,12 @@ const startContinuousInterval = () => {
         timestamp: new Date(),
       });
     }
-  }, 10 * 1000);
+  }, betTime * 1000);
 
   return intervalId;
 };
 
-const continuousIntervalId = startContinuousInterval();
+let continuousIntervalId = startContinuousInterval();
 
 const startBetInterval = async (bet: any) => {
   let currentAmount = isAdminControlled ? bet.amount : 0;
@@ -173,12 +176,14 @@ const startBetInterval = async (bet: any) => {
             return {
               ...entry,
               period: periodCounter,
-              amount: 0,
+              empty: 0,
+              amount: finalAmount,
             };
           } else {
             return {
               ...entry,
               empty: entry.empty + 1,
+              amount: 0,
             };
           }
         });
@@ -244,7 +249,12 @@ const startBetInterval = async (bet: any) => {
           ...entry,
           period: periodCounter,
           empty: 0,
+        };
+      } else if (entry.number === bet.number) {
+        return {
+          ...entry,
           amount: currentAmount,
+          empty: entry.empty + 1,
         };
       } else {
         return {
@@ -288,7 +298,7 @@ const startBetInterval = async (bet: any) => {
       lotteryNumber,
       tableData,
     });
-  }, 10 * 1000);
+  }, betTime * 1000);
 
   activeIntervals[bet._id.toString()] = { intervalId, stopRequested: false };
 };
@@ -355,15 +365,29 @@ io.on("connection", (socket: Socket) => {
       const intervalId = activeIntervals[betId];
       if (intervalId) {
         activeIntervals[betId].stopRequested = true;
+
         socket.emit("betStopScheduled", {
           betId,
           message: "Bet stop scheduled for next cycle",
         });
+
+        const stoppingTime = await GeneratedBet.findOne().sort({
+          timestamp: -1,
+        });
+        if (stoppingTime) {
+          const remainingTime = calculateRemainingTime(
+            betTime,
+            stoppingTime?.timestamp.toString()
+          );
+          setTimeout(() => {
+            clearInterval(continuousIntervalId);
+            continuousIntervalId = startContinuousInterval();
+          }, remainingTime * 1000);
+        }
       } else {
         socket.emit("error", { message: "No active bet found with this ID" });
       }
     } catch (error) {
-      console.error("Error stopping bet:", error);
       socket.emit("error", { message: "Failed to stop bet" });
     }
   });

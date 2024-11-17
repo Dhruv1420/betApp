@@ -111,3 +111,13 @@ export const processManualBets = async (randomNum: number) => {
     })
   );
 };
+
+export const calculateRemainingTime = (
+  betTime: number,
+  stoppingTimestamp: string
+) => {
+  const currentTime = Date.now();
+  const stoppingTime = new Date(stoppingTimestamp).getTime();
+  const elapsedSeconds = (currentTime - stoppingTime) / 1000;
+  return Math.max(betTime - elapsedSeconds, 0);
+};

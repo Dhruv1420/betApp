@@ -48,19 +48,25 @@ export const manualBetting = TryCatch(async (req, res, next) => {
 
 export const getWagerDetails = TryCatch(async (req, res, next) => {
   const generatedBets = await GeneratedBet.find().sort({ timestamp: -1 });
-  const data = await Bet.findOne({ status: "active" }).sort({ timestamp: -1 });
 
-  const results = generatedBets.map((bet) => {
-    return {
-      adminNumber: data?.number || "-",
-      amount: bet.updatedAmount.toFixed(2),
-      number: bet.generatedNumber,
-      status: bet.profit > 0 ? "Win" : "Loss",
-      profit: bet.profit,
-      lotteryNumbers: bet.lotteryNumber,
-      time: bet.timestamp,
-    };
-  });
+  const results = await Promise.all(
+    generatedBets.map(async (bet) => {
+      const betId = bet.betId;
+      const data = await Bet.findById(betId);
+      const adminNum = data?.number || 0;
+
+      return {
+        adminNumber: data?.number || "-",
+        amount: bet.updatedAmount.toFixed(2),
+        number: bet.generatedNumber,
+        status: adminNum === bet.generatedNumber ? "Won" : "Loss",
+        profit: bet.profit,
+        userIds: bet.userIds,
+        lotteryNumbers: bet.lotteryNumber,
+        time: bet.timestamp,
+      };
+    })
+  );
 
   return res.status(200).json(results);
 });
