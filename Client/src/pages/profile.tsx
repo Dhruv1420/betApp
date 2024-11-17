@@ -80,10 +80,9 @@ const Profile = () => {
   useEffect(() => {
     const getProfile = async () => {
       try {
-        const { data } = await axios.get(`${server}/api/v1/user/me`, {
+        const { data } = await axios.get(`${server}/api/v1/user/${user?._id}`, {
           withCredentials: true,
         });
-        console.log(data);
         dispatch(userExist(data.user));
         localStorage.setItem("user", JSON.stringify(data.user));
       } catch (error) {
