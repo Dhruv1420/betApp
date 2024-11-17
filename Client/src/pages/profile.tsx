@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Avatar,
   Box,
@@ -76,15 +77,22 @@ const Profile = () => {
     }
   };
 
+  const getProfile = async () => {
+    try {
+      const { data } = await axios.get(`${server}/api/v1/user/me`, {
+        withCredentials: true,
+      });
+      dispatch(userExist(data.user));
+      localStorage.setItem("user", JSON.stringify(data.user));
+    } catch (error) {
+      dispatch(userNotExist());
+      console.log("An unknown error occurred:", error);
+    }
+  };
+
   useEffect(() => {
-    axios
-      .get(`${server}/api/v1/user/me`, { withCredentials: true })
-      .then(({ data }) => {
-        dispatch(userExist(data.user));
-        localStorage.setItem("user", JSON.stringify(data.user));
-      })
-      .catch((error) => console.log("An unknown error occurred:", error));
-  }, [dispatch]);
+    getProfile();
+  }, []);
 
   if (isError) {
     const err = error as CustomError;
