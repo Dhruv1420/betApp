@@ -77,20 +77,22 @@ const Profile = () => {
     }
   };
 
-  const getProfile = async () => {
-    try {
-      const { data } = await axios.get(`${server}/api/v1/user/me`, {
-        withCredentials: true,
-      });
-      dispatch(userExist(data.user));
-      localStorage.setItem("user", JSON.stringify(data.user));
-    } catch (error) {
-      dispatch(userNotExist());
-      console.log("An unknown error occurred:", error);
-    }
-  };
-
   useEffect(() => {
+    const getProfile = async () => {
+      try {
+        const { data } = await axios.get(`${server}/api/v1/user/me`, {
+          withCredentials: true,
+        });
+        console.log(data);
+        dispatch(userExist(data.user));
+        localStorage.setItem("user", JSON.stringify(data.user));
+      } catch (error) {
+        dispatch(userNotExist());
+        console.log(error);
+        toast.error("Failed to fetch user profile");
+      }
+    };
+
     getProfile();
   }, []);
 
