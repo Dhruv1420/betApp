@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import CloseIcon from "@mui/icons-material/Close";
 import {
   Avatar,
   Box,
@@ -6,26 +7,24 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  IconButton,
   List,
   ListItem,
   ListItemText,
   Typography,
-  IconButton,
 } from "@mui/material";
-import BottomNav from "../components/Header";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
-import { useEffect, useState } from "react";
-import CloseIcon from "@mui/icons-material/Close";
-import { useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
-import { server } from "../contants/keys";
-import { useDispatch } from "react-redux";
-import { userExist, userNotExist } from "../redux/reducer/userReducer";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useGetManualBetsQuery } from "../redux/api/betAPI";
-import { CustomError } from "../types/apiTypes";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import BottomNav from "../components/Header";
 import Loader from "../components/Loader";
+import { server } from "../contants/keys";
+import { useGetManualBetsQuery } from "../redux/api/betAPI";
+import { userExist, userNotExist } from "../redux/reducer/userReducer";
+import { RootState } from "../redux/store";
+import { CustomError } from "../types/apiTypes";
 
 const Profile = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
@@ -80,7 +79,7 @@ const Profile = () => {
   useEffect(() => {
     const getProfile = async () => {
       try {
-        const { data } = await axios.get(`${server}/api/v1/user/me`, {
+        const { data } = await axios.get(`${server}/api/v1/user/${user?._id}`, {
           withCredentials: true,
         });
         dispatch(userExist(data.user));

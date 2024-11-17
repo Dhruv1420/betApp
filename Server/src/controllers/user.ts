@@ -89,7 +89,7 @@ export const getUser = TryCatch(async (req: AuthRequest, res, next) => {
   const user = await User.findById(id);
   if (!user) return next(new ErrorHandler("Invalid ID", 400));
 
-  if (id !== req.user) return next(new ErrorHandler("Not authorized", 400));
+  // if (id !== req.user) return next(new ErrorHandler("Not authorized", 400));
 
   return res.status(200).json({
     success: true,

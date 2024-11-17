@@ -10,14 +10,14 @@ import {
   register,
   updateUser,
 } from "../controllers/user.js";
-import { adminOnly, isAuthenticated } from "../middlewares/auth.js";
+import { adminOnly } from "../middlewares/auth.js";
 
 const app = express.Router();
 
 app.post("/new", register);
 app.post("/login", login);
 
-app.use(isAuthenticated);
+// app.use(isAuthenticated);
 
 app.get("/me", getMyProfile);
 
