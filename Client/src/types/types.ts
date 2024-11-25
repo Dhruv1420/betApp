@@ -5,6 +5,7 @@ export type User = {
   phone: number;
   gender: string;
   referalCode: string;
+  referal: string;
   _id: string;
   coins: number;
   role: string;

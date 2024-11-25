@@ -21,12 +21,27 @@ export const register = TryCatch(
     if (!name || !email || !password || !gender || !phone)
       return next(new ErrorHandler("Please enter all fields", 400));
 
+    const allLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const allNumbers = "1234567890";
+    const allSymbols = "!@#$%^&*()_+";
+    let referal = "";
+    for (let i = 0; i < 10; i++) {
+      let entireString = "";
+      entireString += allLetters;
+      entireString += allNumbers;
+      entireString += allSymbols;
+
+      const randomNum: number = ~~(Math.random() * entireString.length);
+      referal += entireString[randomNum];
+    }
+
     user = await User.create({
       name,
       email,
       password,
       gender,
       referalCode,
+      referal,
       phone,
     });
 
@@ -154,5 +169,15 @@ export const activeAllUsers = TryCatch(async (req, res, next) => {
     success: true,
     message: `${activeUsers.length} more users are active now!`,
     activeUsers,
+  });
+});
+
+export const myReferrals = TryCatch(async (req, res, next) => {
+  const { referal } = req.body;
+  const users = await User.find({ referalCode: referal });
+  return res.status(200).json({
+    success: true,
+    message: "Your referrals",
+    users,
   });
 });

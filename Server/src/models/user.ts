@@ -36,6 +36,10 @@ const schema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    referal: {
+      type: String,
+      default: null,
+    },
     coins: {
       type: Number,
       default: 0,

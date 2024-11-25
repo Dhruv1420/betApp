@@ -25,14 +25,22 @@ import { useGetManualBetsQuery } from "../redux/api/betAPI";
 import { userExist, userNotExist } from "../redux/reducer/userReducer";
 import { RootState } from "../redux/store";
 import { CustomError } from "../types/apiTypes";
+import { User } from "../types/types";
+
+interface MyReferralsDataType {
+  name: string;
+  email: string;
+}
 
 const Profile = () => {
   const { user } = useSelector((state: RootState) => state.userReducer);
 
   const [openProfile, setOpenProfile] = useState(false);
   const [openDeposit, setOpenDeposit] = useState(false);
+  const [openReferrals, setOpenReferrals] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const [openManual, setOpenManual] = useState(false);
+  const [referrals, setReferrals] = useState<MyReferralsDataType[]>([]);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -43,6 +51,9 @@ const Profile = () => {
 
   const handleOpenProfile = () => setOpenProfile(true);
   const handleCloseProfile = () => setOpenProfile(false);
+
+  const handleOpenReferrals = () => setOpenReferrals(true);
+  const handleCloseReferrals = () => setOpenReferrals(false);
 
   const handleOpenDeposit = () => setOpenDeposit(true);
   const handleCloseDeposit = () => setOpenDeposit(false);
@@ -90,7 +101,34 @@ const Profile = () => {
       }
     };
 
+    const getReferrals = async () => {
+      try {
+        const { data } = await axios.post(
+          `${server}/api/v1/user/myreferrals`,
+          {
+            referal: user?.referal,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        const details = data.users.map((user: User) => {
+          return {
+            name: user.name,
+            email: user.email,
+          };
+        });
+
+        setReferrals(details);
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to fetch referrals");
+      }
+    };
+
     getProfile();
+    getReferrals();
   }, []);
 
   if (isError) {
@@ -167,15 +205,32 @@ const Profile = () => {
         <ListItem
           component="button"
           onClick={handleOpenProfile}
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)" },
+          }}
         >
           <ListItemText primary="Profile" />
         </ListItem>
 
         <ListItem
           component="button"
+          onClick={handleOpenReferrals}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)" },
+          }}
+        >
+          <ListItemText primary="My Referrals" />
+        </ListItem>
+
+        <ListItem
+          component="button"
           onClick={handleOpenDeposit}
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)" },
+          }}
         >
           <ListItemText primary="Deposit Record" />
         </ListItem>
@@ -183,7 +238,10 @@ const Profile = () => {
         <ListItem
           component="button"
           onClick={handleOpenWithdraw}
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)" },
+          }}
         >
           <ListItemText primary="Withdrawal Record" />
         </ListItem>
@@ -191,20 +249,32 @@ const Profile = () => {
         <ListItem
           component="button"
           onClick={handleOpenManual}
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)" },
+          }}
         >
           <ListItemText primary="Manual Bet Record" />
         </ListItem>
 
         <ListItem
           component="button"
-          sx={{ cursor: "pointer" }}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)" },
+          }}
           onClick={handleAboutUsClick}
         >
           <ListItemText primary="About us" />
         </ListItem>
 
-        <ListItem component="button" sx={{ cursor: "pointer" }}>
+        <ListItem
+          component="button"
+          sx={{
+            cursor: "pointer",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.1)", color: "red" },
+          }}
+        >
           <ListItemText primary="Logout" onClick={logoutHandler} />
         </ListItem>
       </List>
@@ -257,11 +327,60 @@ const Profile = () => {
               <Typography variant="subtitle1" fontWeight="bold">
                 Referral Code:
               </Typography>
+              <Typography variant="body1">{user?.referal || "N/A"}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="subtitle1" fontWeight="bold">
+                Referred By:
+              </Typography>
               <Typography variant="body1">
                 {user?.referalCode || "N/A"}
               </Typography>
             </Box>
           </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* My Referrals Dialog */}
+      <Dialog
+        open={openReferrals}
+        onClose={handleCloseReferrals}
+        fullWidth
+        maxWidth="sm"
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          p={2}
+        >
+          <DialogTitle>My Referrals</DialogTitle>
+          <IconButton onClick={handleCloseReferrals} edge="end">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <DialogContent dividers>
+          {referrals.length > 0 ? (
+            <List>
+              {referrals.map((record, index) => (
+                <ListItem key={index} divider>
+                  <ListItemText
+                    primary={`User Name: ${record.name}`}
+                    secondary={`Email: ${record.email}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography
+              variant="body1"
+              color="textSecondary"
+              align="center"
+              style={{ marginTop: "16px" }}
+            >
+              You have no referrals.
+            </Typography>
+          )}
         </DialogContent>
       </Dialog>
 

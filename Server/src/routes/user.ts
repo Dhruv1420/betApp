@@ -8,6 +8,7 @@ import {
   getUser,
   login,
   logout,
+  myReferrals,
   register,
   updateUser,
 } from "../controllers/user.js";
@@ -21,6 +22,8 @@ app.post("/login", login);
 // app.use(isAuthenticated);
 
 app.get("/me", getMyProfile);
+
+app.post("/myreferrals", myReferrals);
 
 app.use("/logout", logout);
 
