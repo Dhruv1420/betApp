@@ -5,6 +5,7 @@ import { User } from "../models/user.js";
 import { AuthRequest, NewUserRequestBody } from "../types/types.js";
 import { cookieOptions, sendToken } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
+import { Bet } from "../models/bet.js";
 
 export const register = TryCatch(
   async (
@@ -132,5 +133,26 @@ export const deleteUser = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     message: "User deleted successfully",
+  });
+});
+
+export const activeAllUsers = TryCatch(async (req, res, next) => {
+  const bet = await Bet.findOne({ status: "active" }).sort({ createdAt: -1 });
+  if (!bet) return next(new ErrorHandler("Bet Not started Yet", 400));
+
+  const users = await User.find();
+  const activeUsers = users.filter((user) => {
+    if (Number(bet?.amount) > user.coins) return false;
+    if (user.status === "active") return false;
+    if (user.status === "banned") return false;
+    user.status = "active";
+    user.save();
+    return true;
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: `${activeUsers.length} more users are active now!`,
+    activeUsers,
   });
 });

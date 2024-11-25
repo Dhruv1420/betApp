@@ -74,7 +74,7 @@ const Withdraw = () => {
       toast.success("Your balance will be updated shortly.");
     } catch (error) {
       toast.error("Withdrawal failed");
-      console.error(user);
+      // console.error(user);
       console.error(error);
     }
   };
